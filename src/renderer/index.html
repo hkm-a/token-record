@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Token 消耗记录</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- 标题栏：整条可拖动，按钮区排除拖动 -->
+      <header class="titlebar">
+        <div class="brand">
+          <span class="brand-mark"></span>
+          <span class="brand-text">Token 记录</span>
+        </div>
+        <div class="win-controls">
+          <button id="btnPin" class="wc-btn" title="置顶开关">📌</button>
+          <button id="btnRefresh" class="wc-btn" title="立即刷新">↻</button>
+          <button id="btnMin" class="wc-btn" title="隐藏到托盘">—</button>
+          <button id="btnClose" class="wc-btn wc-close" title="退出">✕</button>
+        </div>
+      </header>
+
+      <!-- 总览：三家合计 -->
+      <section class="overview">
+        <div class="ov-item">
+          <span class="ov-num" id="grandTokens">0</span>
+          <span class="ov-label">总 Tokens</span>
+        </div>
+        <div class="ov-divider"></div>
+        <div class="ov-item">
+          <span class="ov-num ov-cost" id="grandCost">$0</span>
+          <span class="ov-label">总花费</span>
+        </div>
+      </section>
+
+      <!-- 工具卡片容器：三张固定卡由脚本生成 -->
+      <section class="cards" id="cards"></section>
+
+      <!-- 状态栏 -->
+      <footer class="statusbar">
+        <span class="live-dot" id="liveDot"></span>
+        <span id="updatedAt">等待数据…</span>
+        <span class="spacer"></span>
+        <span id="estimateNote"></span>
+      </footer>
+    </div>
+
+    <script src="animations.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+# 依赖
+node_modules/
+
+# 运行时快照与本地缓存
+.cache/
+snapshot.json
+*.log
+
+# 操作系统
+Thumbs.db
+.DS_Store
+
+# 构建产物
+dist/
+out/

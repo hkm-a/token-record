@@ -1,0 +1,25 @@
+{
+  "name": "token-record",
+  "version": "1.0.0",
+  "description": "记录 Claude Code、Codex、Grok Build 的 token 与金钱消耗，并以桌面悬浮窗展示",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "cli": "node src/cli.js",
+    "test": "node --test test/"
+  },
+  "keywords": [
+    "token",
+    "usage",
+    "cost",
+    "claude",
+    "codex",
+    "grok",
+    "electron"
+  ],
+  "author": "hkm",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}
