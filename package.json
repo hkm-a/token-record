@@ -6,7 +6,9 @@
   "scripts": {
     "start": "electron .",
     "cli": "node src/cli.js",
-    "test": "node --test test/"
+    "test": "node --test",
+    "icon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-icon.ps1 && node scripts/png2ico.js",
+    "shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-shortcut.ps1"
   },
   "keywords": [
     "token",

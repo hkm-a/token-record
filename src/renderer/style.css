@@ -11,11 +11,18 @@
 
 html,
 body {
+  width: 100%;
   height: 100%;
   background: transparent;
   overflow: hidden;
   font-family: 'Segoe UI', -apple-system, 'Microsoft YaHei UI', system-ui, sans-serif;
   color: #eaecf2;
+}
+
+/* 四周留透明边距容纳阴影，避免透明窗口下阴影被窗口矩形裁成直角方块 */
+body {
+  padding: 20px;
+  box-sizing: border-box;
 }
 
 /* 数字统一使用等宽数字，滚动时不抖动 */
@@ -26,16 +33,17 @@ body {
 
 #app {
   position: relative;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  border-radius: 22px;
+  border-radius: 20px;
   overflow: hidden;
   background: linear-gradient(160deg, rgba(30, 32, 46, 0.82), rgba(15, 16, 23, 0.9));
   backdrop-filter: blur(32px) saturate(160%);
   -webkit-backdrop-filter: blur(32px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
 /* 顶部环境光晕：三色微光，营造层次 */
@@ -394,4 +402,20 @@ body {
     opacity: 1;
     transform: scale(1.1);
   }
+}
+
+/* ---------- 折叠模式：仅保留标题栏与总览 ---------- */
+body.compact .cards,
+body.compact .statusbar {
+  display: none;
+}
+
+body.compact .overview {
+  padding-top: 10px;
+  padding-bottom: 16px;
+}
+
+/* 音效关闭态按钮 */
+.wc-btn.muted {
+  opacity: 0.45;
 }

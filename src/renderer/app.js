@@ -13,6 +13,7 @@ const TOOLS = [
 const refs = {}; // key -> 卡片内各元素引用
 const prev = {}; // key -> 上次显示的 { tokens, cost }，作为 count-up 起点
 let prevGrand = { tokens: 0, cost: 0 };
+let muted = localStorage.getItem('tr_muted') === '1'; // 音效开关（持久化）
 
 // 精简模型名，便于在窄卡内显示。
 function tidyModel(m) {
@@ -77,6 +78,7 @@ function buildCards() {
 function handleData(payload) {
   const { snapshot, delta, isFirst } = payload;
   const grandTotal = snapshot.grand.total || 0;
+  let anyIncrease = false;
 
   for (const t of TOOLS) {
     const d = snapshot.tools[t.key];
@@ -105,6 +107,7 @@ function handleData(payload) {
     if (!isFirst && dt > 0) {
       spawnBubble(r.bubbles, '+' + formatCompact(dt), t.accent);
       pulse(r.card);
+      anyIncrease = true;
     }
 
     prev[t.key] = { tokens, cost };
@@ -119,14 +122,30 @@ function handleData(payload) {
   const time = new Date(snapshot.generatedAt).toLocaleTimeString('zh-CN');
   refs.updatedAt.textContent = '更新于 ' + time;
   refs.estimateNote.textContent = snapshot.grand.estimated ? '含估算定价' : '';
+
+  // 收银音效：本帧任一工具有增长且未静音时，响一声。
+  if (anyIncrease && !muted) {
+    playCashRegister();
+  }
 }
 
 // 绑定窗口控制按钮。
 function bindControls() {
   document.getElementById('btnClose').addEventListener('click', () => window.api.quit());
-  document.getElementById('btnMin').addEventListener('click', () => window.api.minimize());
   document.getElementById('btnRefresh').addEventListener('click', () => window.api.refreshNow());
 
+  // 折叠/展开：仅保留标题栏与总览
+  let compact = false;
+  const btnMin = document.getElementById('btnMin');
+  btnMin.addEventListener('click', () => {
+    compact = !compact;
+    document.body.classList.toggle('compact', compact);
+    btnMin.textContent = compact ? '▢' : '▁';
+    btnMin.title = compact ? '展开' : '折叠';
+    window.api.setCompact(compact);
+  });
+
+  // 置顶
   let pinned = true;
   const btnPin = document.getElementById('btnPin');
   btnPin.classList.add('pinned');
@@ -134,6 +153,21 @@ function bindControls() {
     pinned = !pinned;
     btnPin.classList.toggle('pinned', pinned);
     window.api.togglePin(pinned);
+  });
+
+  // 音效开关（持久化；开启时试听一声）
+  const btnMute = document.getElementById('btnMute');
+  const refreshMute = () => {
+    btnMute.textContent = muted ? '🔇' : '🔊';
+    btnMute.classList.toggle('muted', muted);
+    btnMute.title = muted ? '音效已关' : '音效已开';
+  };
+  refreshMute();
+  btnMute.addEventListener('click', () => {
+    muted = !muted;
+    localStorage.setItem('tr_muted', muted ? '1' : '0');
+    refreshMute();
+    if (!muted) playCashRegister();
   });
 }
 
