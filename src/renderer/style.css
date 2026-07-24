@@ -1,4 +1,4 @@
-/* Token 记录悬浮窗：深色玻璃拟态 + 宽松间距（v1.4.1） */
+/* Token 记录：提高信息密度——砍掉大块低信息区，副行承载周期数据 */
 
 * {
   margin: 0;
@@ -18,10 +18,8 @@ body {
   color: #eaecf2;
 }
 
-/* 阴影边距 */
 body {
-  padding: 16px;
-  box-sizing: border-box;
+  padding: 14px;
 }
 
 .num {
@@ -35,26 +33,25 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-radius: 22px;
+  border-radius: 18px;
   overflow: hidden;
-  background: linear-gradient(160deg, rgba(30, 32, 46, 0.88), rgba(15, 16, 23, 0.94));
-  backdrop-filter: blur(32px) saturate(160%);
-  -webkit-backdrop-filter: blur(32px) saturate(160%);
+  background: linear-gradient(160deg, rgba(30, 32, 46, 0.9), rgba(15, 16, 23, 0.95));
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 #app::before {
   content: '';
   position: absolute;
-  top: -45%;
-  left: -25%;
-  width: 150%;
-  height: 70%;
-  background: radial-gradient(ellipse at 25% 40%, rgba(217, 119, 87, 0.18), transparent 55%),
-    radial-gradient(ellipse at 60% 30%, rgba(16, 163, 127, 0.14), transparent 55%),
-    radial-gradient(ellipse at 85% 45%, rgba(155, 140, 255, 0.18), transparent 55%);
-  filter: blur(8px);
+  top: -40%;
+  left: -20%;
+  width: 140%;
+  height: 65%;
+  background: radial-gradient(ellipse at 25% 40%, rgba(217, 119, 87, 0.16), transparent 55%),
+    radial-gradient(ellipse at 70% 30%, rgba(16, 163, 127, 0.12), transparent 55%),
+    radial-gradient(ellipse at 90% 50%, rgba(155, 140, 255, 0.14), transparent 55%);
   pointer-events: none;
   z-index: 0;
 }
@@ -64,59 +61,57 @@ body {
   z-index: 1;
 }
 
-/* ---------- 标题栏 ---------- */
+/* 标题栏：压矮 */
 .titlebar {
   -webkit-app-region: drag;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 18px 22px 12px;
+  padding: 10px 14px 6px;
   flex-shrink: 0;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .brand-mark {
-  width: 13px;
-  height: 13px;
-  border-radius: 4px;
+  width: 11px;
+  height: 11px;
+  border-radius: 3px;
   background: conic-gradient(from 120deg, #d97757, #10a37f, #9b8cff, #d97757);
-  box-shadow: 0 0 12px rgba(155, 140, 255, 0.55);
+  box-shadow: 0 0 10px rgba(155, 140, 255, 0.5);
 }
 
 .brand-text {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.3px;
   color: #cfd3df;
 }
 
 .win-controls {
   -webkit-app-region: no-drag;
   display: flex;
-  gap: 6px;
+  gap: 4px;
 }
 
 .wc-btn {
-  width: 30px;
-  height: 30px;
+  width: 26px;
+  height: 26px;
   border: none;
-  border-radius: 9px;
+  border-radius: 7px;
   background: rgba(255, 255, 255, 0.05);
   color: #aeb4c2;
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.15s;
+  transition: background 0.15s, color 0.15s;
 }
 
 .wc-btn:hover {
   background: rgba(255, 255, 255, 0.12);
   color: #fff;
-  transform: translateY(-1px);
 }
 
 .wc-close:hover {
@@ -132,29 +127,30 @@ body {
   opacity: 0.45;
 }
 
-/* ---------- 总览 ---------- */
+/* 总览：主数字 + 今日/7日副行（原两块 period 卡片合并到此） */
 .overview {
   display: flex;
-  align-items: center;
-  justify-content: space-around;
-  padding: 6px 24px 16px;
-  gap: 12px;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 4px 16px 8px;
+  gap: 10px;
   flex-shrink: 0;
 }
 
 .ov-item {
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 3px;
   min-width: 0;
 }
 
 .ov-num {
-  font-size: 32px;
+  font-size: 26px;
   font-weight: 700;
-  letter-spacing: 0.3px;
   line-height: 1.1;
+  letter-spacing: 0.2px;
   background: linear-gradient(180deg, #ffffff, #b9c0d0);
   -webkit-background-clip: text;
   background-clip: text;
@@ -168,109 +164,77 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
-.ov-label {
-  font-size: 12px;
-  color: #8990a0;
-  letter-spacing: 0.4px;
+.ov-sub {
+  font-size: 11px;
+  color: #8b92a3;
+  letter-spacing: 0.1px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
 }
 
 .ov-divider {
   width: 1px;
-  height: 48px;
-  flex-shrink: 0;
-  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.14), transparent);
-}
-
-/* ---------- 今日 / 近 7 日 ---------- */
-.period {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 0 22px 18px;
+  align-self: stretch;
+  margin: 4px 0;
+  background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.12), transparent);
   flex-shrink: 0;
 }
 
-.period-stats {
+/* 7 日火花条：单行 */
+.spark {
   display: flex;
-  justify-content: space-between;
-  gap: 14px;
-}
-
-.period-item {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 8px;
-  padding: 14px 16px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0 16px 10px;
+  flex-shrink: 0;
 }
 
-.period-label {
-  font-size: 12px;
-  color: #8990a0;
-  letter-spacing: 0.4px;
-}
-
-.period-val {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.period-cost {
-  font-size: 18px;
-  font-weight: 700;
-  color: #e8ecf5;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.2;
-}
-
-.period-tok {
-  font-size: 12px;
-  color: #8b92a3;
-  font-variant-numeric: tabular-nums;
+.spark-label {
+  font-size: 10px;
+  color: #6d7383;
+  letter-spacing: 0.3px;
+  flex-shrink: 0;
+  width: 18px;
 }
 
 .period-bars {
+  flex: 1;
   display: flex;
   align-items: flex-end;
-  gap: 7px;
-  height: 40px;
-  padding: 4px 2px 0;
+  gap: 4px;
+  height: 22px;
 }
 
 .period-bar {
   flex: 1;
-  min-height: 4px;
-  border-radius: 4px 4px 2px 2px;
+  min-height: 2px;
+  border-radius: 2px 2px 1px 1px;
   background: linear-gradient(180deg, rgba(111, 240, 192, 0.9), rgba(23, 163, 127, 0.35));
-  opacity: 0.9;
-  transition: height 0.35s ease;
+  transition: height 0.3s ease;
 }
 
 .period-bar.is-empty {
-  background: rgba(255, 255, 255, 0.08);
-  opacity: 0.45;
-  min-height: 4px;
-  height: 4px !important;
+  background: rgba(255, 255, 255, 0.07);
+  height: 2px !important;
+  min-height: 2px;
+  opacity: 0.5;
 }
 
 .period-bar.is-today {
-  box-shadow: 0 0 10px rgba(111, 240, 192, 0.5);
+  box-shadow: 0 0 6px rgba(111, 240, 192, 0.45);
 }
 
-/* ---------- 空态 ---------- */
+/* 空态：压矮 */
 .empty-banner {
-  margin: 0 22px 14px;
-  padding: 14px 16px;
-  border-radius: 14px;
+  margin: 0 14px 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
   background: rgba(255, 196, 90, 0.08);
-  border: 1px solid rgba(255, 196, 90, 0.22);
-  color: #e8d9b0;
-  max-height: 110px;
-  overflow-y: auto;
+  border: 1px solid rgba(255, 196, 90, 0.2);
   flex-shrink: 0;
 }
 
@@ -279,108 +243,112 @@ body {
 }
 
 .empty-title {
-  font-size: 13px;
+  font-size: 11px;
   font-weight: 600;
-  margin-bottom: 6px;
   color: #f0d58a;
+  margin-bottom: 2px;
 }
 
 .empty-body {
-  font-size: 11.5px;
-  line-height: 1.5;
-  white-space: pre-wrap;
+  font-size: 10.5px;
   color: #c9b98a;
+  line-height: 1.35;
 }
 
 .card.is-muted {
-  opacity: 0.75;
+  opacity: 0.72;
 }
 
-/* ---------- 卡片区（紧凑：今日在右上角） ---------- */
+/* 卡片 */
 .cards {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 2px 20px 14px;
+  gap: 8px;
+  padding: 0 14px 8px;
   overflow-y: auto;
   min-height: 0;
 }
 
 .cards::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 
 .cards::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14);
-  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
 }
 
 .card {
   position: relative;
-  padding: 12px 14px 11px;
-  border-radius: 16px;
+  padding: 10px 12px 9px;
+  border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.018));
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-left: 3px solid var(--accent);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
   flex-shrink: 0;
-}
-
-.card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.32);
 }
 
 .card-glow {
   position: absolute;
-  top: -60%;
-  right: -30%;
-  width: 70%;
-  height: 180%;
+  top: -50%;
+  right: -25%;
+  width: 60%;
+  height: 160%;
   background: radial-gradient(circle, var(--accent), transparent 65%);
-  opacity: 0.12;
+  opacity: 0.1;
   pointer-events: none;
 }
 
 .card-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: 7px;
+  margin-bottom: 6px;
 }
 
 .tool-dot {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   background: var(--accent);
-  box-shadow: 0 0 8px var(--accent);
+  box-shadow: 0 0 6px var(--accent);
   flex-shrink: 0;
 }
 
+.tool-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
 .tool-name {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   color: #e6e9f0;
-  min-width: 0;
+  line-height: 1.15;
+}
+
+.tool-model {
+  font-size: 10px;
+  color: #7a8194;
+  line-height: 1.15;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* 原模型名位置：显示今日用量 */
 .tool-today {
   margin-left: auto;
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 650;
   color: var(--accent);
-  opacity: 0.95;
-  letter-spacing: 0.2px;
   font-variant-numeric: tabular-nums;
-  max-width: 46%;
+  max-width: 42%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -390,142 +358,130 @@ body {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 8px;
-  gap: 10px;
+  gap: 8px;
+  margin-bottom: 6px;
 }
 
 .card-main .metric {
   display: flex;
   align-items: baseline;
-  gap: 5px;
-  min-width: 0;
+  gap: 4px;
 }
 
 .card-main .tokens {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   color: #f2f4f8;
-  letter-spacing: 0.2px;
-  line-height: 1.1;
+  line-height: 1.05;
 }
 
 .card-main .unit {
-  font-size: 11px;
+  font-size: 10px;
   color: #7f8698;
 }
 
 .card-main .cost {
-  font-size: 17px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--accent);
-  text-shadow: 0 0 14px color-mix(in srgb, var(--accent) 55%, transparent);
   flex-shrink: 0;
 }
 
 .bar {
-  height: 4px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.08);
+  height: 3px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.07);
   overflow: hidden;
-  margin-bottom: 9px;
+  margin-bottom: 7px;
 }
 
 .bar-fill {
   height: 100%;
   width: 0%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 55%, transparent), var(--accent));
-  box-shadow: 0 0 10px var(--accent);
-  transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-/* 脚注仅芯片一行 */
-.card-foot {
-  display: flex;
-  align-items: center;
+  border-radius: 3px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 50%, transparent), var(--accent));
+  transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .stat-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
 }
 
 .chip {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
-  padding: 3px 8px;
+  gap: 2px;
+  padding: 2px 7px;
   border-radius: 999px;
-  font-size: 11px;
-  color: #9aa1b2;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  line-height: 1.2;
+  font-size: 10.5px;
+  color: #8e95a6;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  line-height: 1.25;
 }
 
 .chip b {
   font-weight: 650;
-  color: #d5dae6;
+  color: #cfd4e0;
   font-variant-numeric: tabular-nums;
 }
 
 .bubble-layer {
   position: absolute;
-  top: 36px;
-  right: 18px;
-  height: 40px;
+  top: 28px;
+  right: 12px;
+  height: 32px;
   pointer-events: none;
 }
 
 .bubble {
   position: absolute;
   right: 0;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 700;
-  transform: translateX(var(--bubble-x, 0));
-  animation: bubbleUp 1.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: bubbleUp 1.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes bubbleUp {
   0% {
     opacity: 0;
-    transform: translate(var(--bubble-x, 0), 8px) scale(0.85);
+    transform: translateY(6px) scale(0.9);
   }
-  22% {
+  20% {
     opacity: 1;
-    transform: translate(var(--bubble-x, 0), -2px) scale(1.05);
   }
   100% {
     opacity: 0;
-    transform: translate(var(--bubble-x, 0), -34px) scale(1);
+    transform: translateY(-28px);
   }
 }
 
 .card.pulse {
-  animation: cardPulse 0.9s ease-out;
+  animation: cardPulse 0.85s ease-out;
 }
 
 @keyframes cardPulse {
   0% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 50%, transparent);
   }
-  30% {
-    box-shadow: 0 0 22px 3px color-mix(in srgb, var(--accent) 60%, transparent);
+  35% {
+    box-shadow: 0 0 16px 2px color-mix(in srgb, var(--accent) 55%, transparent);
   }
   100% {
     box-shadow: 0 0 0 0 transparent;
   }
 }
 
-/* ---------- 状态栏 ---------- */
+/* 状态栏：压矮 */
 .statusbar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 14px 22px 16px;
-  font-size: 12px;
-  color: #7d8496;
+  gap: 6px;
+  padding: 7px 14px 9px;
+  font-size: 10.5px;
+  color: #6f7688;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
 }
@@ -535,15 +491,15 @@ body {
 }
 
 #estimateNote {
-  color: #c8a86a;
+  color: #b89a5e;
 }
 
 .live-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #2ecf87;
-  box-shadow: 0 0 8px #2ecf87;
+  box-shadow: 0 0 6px #2ecf87;
   animation: breathe 2s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -551,23 +507,19 @@ body {
 @keyframes breathe {
   0%,
   100% {
-    opacity: 0.45;
-    transform: scale(0.85);
+    opacity: 0.4;
   }
   50% {
     opacity: 1;
-    transform: scale(1.1);
   }
 }
 
 .app-version {
-  margin-left: 8px;
-  font-size: 11px;
-  color: #6d7383;
-  letter-spacing: 0.3px;
+  font-size: 10px;
+  color: #5c6374;
 }
 
-/* ---------- 折叠 ---------- */
+/* 折叠：只留总览 + 7日条 */
 body.compact .cards,
 body.compact .statusbar,
 body.compact .empty-banner {
@@ -575,10 +527,9 @@ body.compact .empty-banner {
 }
 
 body.compact .overview {
-  padding-top: 10px;
-  padding-bottom: 12px;
+  padding-bottom: 6px;
 }
 
-body.compact .period {
-  padding-bottom: 22px;
+body.compact .spark {
+  padding-bottom: 14px;
 }

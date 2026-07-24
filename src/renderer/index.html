@@ -8,7 +8,7 @@
   </head>
   <body>
     <div id="app">
-      <!-- 标题栏：整条可拖动，按钮区排除拖动 -->
+      <!-- 标题栏 -->
       <header class="titlebar">
         <div class="brand">
           <span class="brand-mark"></span>
@@ -19,54 +19,37 @@
           <button id="btnPin" class="wc-btn" title="置顶开关">📌</button>
           <button id="btnRefresh" class="wc-btn" title="立即刷新">↻</button>
           <button id="btnMin" class="wc-btn" title="折叠/展开">▁</button>
-          <button id="btnClose" class="wc-btn wc-close" title="退出">✕</button>
+          <button id="btnClose" class="wc-btn wc-close" title="隐藏到托盘">✕</button>
         </div>
       </header>
 
-      <!-- 总览：三家合计 -->
+      <!-- 总览：合计 + 今日/7日副行（去掉原先两块大卡片） -->
       <section class="overview">
         <div class="ov-item">
           <span class="ov-num" id="grandTokens">0</span>
-          <span class="ov-label">总 Tokens</span>
+          <span class="ov-sub" id="grandTokensSub">今日 0 · 7日 0</span>
         </div>
         <div class="ov-divider"></div>
         <div class="ov-item">
           <span class="ov-num ov-cost" id="grandCost">$0</span>
-          <span class="ov-label">总花费</span>
+          <span class="ov-sub" id="grandCostSub">今日 $0 · 7日 $0</span>
         </div>
       </section>
 
-      <!-- 今日 / 近 7 日 + 迷你柱 -->
-      <section class="period" id="period">
-        <div class="period-stats">
-          <div class="period-item">
-            <span class="period-label">今日</span>
-            <div class="period-val" id="periodToday">
-              <span class="period-cost">$0</span>
-              <span class="period-tok">0 tok</span>
-            </div>
-          </div>
-          <div class="period-item">
-            <span class="period-label">近 7 日</span>
-            <div class="period-val" id="periodWeek">
-              <span class="period-cost">$0</span>
-              <span class="period-tok">0 tok</span>
-            </div>
-          </div>
-        </div>
+      <!-- 近 7 日迷你柱：一行高信息、低占位 -->
+      <section class="spark" id="period">
+        <span class="spark-label">7日</span>
         <div class="period-bars" id="periodBars" title="近 7 日 token 用量"></div>
       </section>
 
-      <!-- 全局空态 / 源异常提示（有数据时隐藏） -->
+      <!-- 空态 -->
       <section class="empty-banner" id="emptyBanner" hidden>
         <div class="empty-title" id="emptyTitle">暂无用量数据</div>
         <div class="empty-body" id="emptyBody"></div>
       </section>
 
-      <!-- 工具卡片容器：三张固定卡由脚本生成 -->
       <section class="cards" id="cards"></section>
 
-      <!-- 状态栏 -->
       <footer class="statusbar">
         <span class="live-dot" id="liveDot"></span>
         <span id="updatedAt">等待数据…</span>
