@@ -1,6 +1,6 @@
 {
   "name": "token-record",
-  "version": "1.4.3",
+  "version": "1.4.4",
   "description": "记录 Claude Code、Codex、Grok Build 的 token 与金钱消耗，并以桌面悬浮窗展示",
   "main": "src/main/main.js",
   "scripts": {

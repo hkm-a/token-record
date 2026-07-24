@@ -156,6 +156,11 @@ function handleData(payload) {
   refs.estimateNote.textContent = notes.join(' · ');
 
   if (anyIncrease && !muted) playCashRegister();
+
+  // 内容高度可能变化：下一帧请求主进程收紧窗口
+  requestAnimationFrame(() => {
+    if (window.api && window.api.fitContent) window.api.fitContent();
+  });
 }
 
 function updateEmptyBanner(snapshot) {

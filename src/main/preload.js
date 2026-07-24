@@ -17,6 +17,8 @@ contextBridge.exposeInMainWorld('api', {
   refreshNow: () => ipcRenderer.send('refresh-now'),
   togglePin: (pinned) => ipcRenderer.send('toggle-pin', pinned),
   setCompact: (compact) => ipcRenderer.send('set-compact', compact),
+  // 按内容收紧窗口高度，消除底部空白
+  fitContent: () => ipcRenderer.send('fit-content'),
   getVersion: () => ipcRenderer.invoke('get-version'),
   getPrefs: () => ipcRenderer.invoke('get-prefs'),
 });

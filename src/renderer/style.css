@@ -11,7 +11,8 @@
 html,
 body {
   width: 100%;
-  height: 100%;
+  height: auto; /* 高度跟内容走，避免底部被撑出大块空白 */
+  min-height: 0;
   background: transparent;
   overflow: hidden;
   font-family: 'Segoe UI', -apple-system, 'Microsoft YaHei UI', system-ui, sans-serif;
@@ -19,7 +20,7 @@ body {
 }
 
 body {
-  padding: 14px;
+  padding: 12px;
 }
 
 .num {
@@ -30,7 +31,7 @@ body {
 #app {
   position: relative;
   width: 100%;
-  height: 100%;
+  height: auto; /* 不拉满窗口，避免卡片与状态栏之间空洞 */
   display: flex;
   flex-direction: column;
   border-radius: 18px;
@@ -259,14 +260,14 @@ body {
   opacity: 0.72;
 }
 
-/* 卡片 */
+/* 卡片：不抢剩余高度（原先 flex:1 会在底部留白） */
 .cards {
-  flex: 1;
+  flex: 0 0 auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding: 0 14px 8px;
-  overflow-y: auto;
+  padding: 0 14px 6px;
+  overflow: visible;
   min-height: 0;
 }
 
