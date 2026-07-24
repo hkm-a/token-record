@@ -36,6 +36,27 @@
         </div>
       </section>
 
+      <!-- 今日 / 近 7 日 + 迷你柱 -->
+      <section class="period" id="period">
+        <div class="period-stats">
+          <div class="period-item">
+            <span class="period-label">今日</span>
+            <span class="period-val" id="periodToday">$0 · 0</span>
+          </div>
+          <div class="period-item">
+            <span class="period-label">近 7 日</span>
+            <span class="period-val" id="periodWeek">$0 · 0</span>
+          </div>
+        </div>
+        <div class="period-bars" id="periodBars" title="近 7 日 token 用量"></div>
+      </section>
+
+      <!-- 全局空态 / 源异常提示（有数据时隐藏） -->
+      <section class="empty-banner" id="emptyBanner" hidden>
+        <div class="empty-title" id="emptyTitle">暂无用量数据</div>
+        <div class="empty-body" id="emptyBody"></div>
+      </section>
+
       <!-- 工具卡片容器：三张固定卡由脚本生成 -->
       <section class="cards" id="cards"></section>
 
@@ -45,6 +66,7 @@
         <span id="updatedAt">等待数据…</span>
         <span class="spacer"></span>
         <span id="estimateNote"></span>
+        <span id="appVersion" class="app-version" title="版本"></span>
       </footer>
     </div>
 

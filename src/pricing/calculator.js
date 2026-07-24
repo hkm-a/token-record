@@ -3,14 +3,65 @@
 // 计价器：把 token 用量换算为美元花费。
 // 设计意图：定价数据与逻辑分离（pricing.json 可独立修改）；模型名做“最长子串匹配”，
 // 从而兼容带日期/后缀的模型标识（如 claude-opus-4-8、gpt-5.6-terra）。
+// 用户可通过 ~/.token-record/pricing.override.json 覆盖单价，无需改仓库文件。
 
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
-// 读取定价表。默认读取同目录 pricing.json；允许传入自定义路径便于测试。
-function loadTable(file) {
-  const p = file || path.join(__dirname, 'pricing.json');
-  return JSON.parse(fs.readFileSync(p, 'utf8'));
+// 默认用户覆盖文件路径。
+function defaultOverridePath() {
+  return path.join(os.homedir(), '.token-record', 'pricing.override.json');
+}
+
+// 浅合并模型表：override.models 覆盖同名键；default 字段按键合并。
+function mergeTables(base, override) {
+  if (!override || typeof override !== 'object') return base;
+  const out = {
+    ...base,
+    models: { ...(base.models || {}) },
+  };
+  if (override.models && typeof override.models === 'object') {
+    for (const [k, v] of Object.entries(override.models)) {
+      out.models[k] = { ...(out.models[k] || {}), ...v };
+    }
+  }
+  if (override.default && typeof override.default === 'object') {
+    out.default = { ...(base.default || {}), ...override.default };
+  }
+  if (override._meta && typeof override._meta === 'object') {
+    out._meta = { ...(base._meta || {}), ...override._meta };
+  }
+  return out;
+}
+
+// 读取定价表。默认读取同目录 pricing.json；再合并用户覆盖文件。
+// opts.file / 位置参数 file：主表路径。
+// opts.overrideFile：覆盖表路径；传 false 可禁用覆盖（测试用）。
+function loadTable(file, opts = {}) {
+  const options = typeof file === 'object' && file !== null ? file : opts;
+  const mainFile =
+    typeof file === 'string'
+      ? file
+      : options.file || path.join(__dirname, 'pricing.json');
+  const base = JSON.parse(fs.readFileSync(mainFile, 'utf8'));
+
+  let overrideFile = options.overrideFile;
+  if (overrideFile === false) {
+    return base;
+  }
+  if (overrideFile == null) {
+    overrideFile = process.env.TOKENREC_PRICING_OVERRIDE || defaultOverridePath();
+  }
+
+  try {
+    const raw = fs.readFileSync(overrideFile, 'utf8');
+    const ov = JSON.parse(raw);
+    return mergeTables(base, ov);
+  } catch (_err) {
+    // 无覆盖文件时静默使用主表
+    return base;
+  }
 }
 
 // 为模型查找费率：先精确匹配，再取“被模型名包含的最长键”，最后回退默认。
@@ -51,4 +102,10 @@ function costOfTokens(tokens, model, table) {
   return { cost, estimated, matched, free: !!rate.free };
 }
 
-module.exports = { loadTable, findRate, costOfTokens };
+module.exports = {
+  loadTable,
+  findRate,
+  costOfTokens,
+  mergeTables,
+  defaultOverridePath,
+};

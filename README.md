@@ -1,78 +1,132 @@
-<p align="center">
-  <img src="docs/readme/hero.svg" width="100%" alt="Token 记录：在桌面悬浮窗中汇总 Claude Code、Codex 与 Grok Build 的本地 token 用量和费用。">
-</p>
+# Token 记录 · Desktop Token & Cost Monitor
 
-# Token 记录
+本地优先的桌面悬浮窗：汇总 **Claude Code**、**Codex**、**Grok Build** 的 token 消耗与估算费用，数值变化带动效。无需账号、不上云。
 
-> 实时查看 Claude Code、Codex 和 Grok Build 的 token 消耗与估算费用，无需手工记账。
+![成品预览](docs/preview.png)
 
-<p align="center">
-  <a href="#快速开始">快速开始</a> ·
-  <a href="#它解决什么问题">工作方式</a> ·
-  <a href="#验证">验证</a>
-</p>
+折叠态（标题栏「▁」）：
 
-![Token 记录主界面，展示三种工具的 token 用量和费用汇总](docs/preview.png)
+![折叠态](docs/preview-compact.png)
 
-折叠后仅保留总 token 与总费用，适合常驻桌面：
+**当前版本：v1.3.0** · [Releases](https://github.com/hkm-a/token-record/releases)
 
-![Token 记录折叠态](docs/preview-compact.png)
+---
 
-## 它解决什么问题
+## 30 秒上手
 
-AI 编码工具的用量分散在各自的本地会话记录中，难以横向比较。Token 记录读取 Claude Code、Codex 与 Grok Build 的本地会话文件，按模型价格汇总 token 与费用，并以可折叠的桌面悬浮窗展示结果。
+1. 从 [Releases](https://github.com/hkm-a/token-record/releases) 下载 `TokenRecord-*-portable.exe`
+2. 双击运行 → 右上角悬浮窗 + 托盘图标
+3. 若三源皆空：先用过对应 AI 编码工具产生本地会话后再看
 
-## 功能
-
-- **三源自动汇总**：读取三个工具的本地会话记录，不需要手工录入。
-- **分项计价**：区分输入、输出、缓存写入与缓存读取；无公开价格的自定义模型会标记为估算。
-- **增量刷新**：每两秒扫描一次，仅重解析修改过的会话文件。
-- **桌面悬浮窗**：支持置顶、拖动、折叠和单实例启动。
-- **变化可见**：数值滚动、增量气泡和卡片脉冲让新消耗一眼可见；收银音效可在标题栏关闭。
-
-## 快速开始
-
-前提：已安装 Node.js，并允许 Electron 下载运行时。
+开发模式：
 
 ```bash
 npm install
-npm start
+npm start          # 悬浮窗
+npm run cli        # 终端汇总（含数据源状态）
+npm test           # 单元测试
+npm run pack       # 打 Windows 便携包 → dist/
 ```
 
-启动后，桌面右上角会出现悬浮窗。运行 `npm run cli` 可在终端核对一次聚合结果。
+---
 
-## 它如何工作
+## 它解决什么问题
 
-```text
-本地会话 JSONL
-  -> 三个采集器读取各自格式
-  -> 聚合、去重与按模型计价
-  -> Electron 悬浮窗与 CLI 展示结果
-```
+AI 编码工具的用量分散在各自本地会话里，难以横向比较。本工具只读本机会话文件，按模型单价汇总 token 与费用，并以可折叠悬浮窗常驻桌面。
 
-| 数据源 | 读取位置 | 提取内容 |
-| --- | --- | --- |
+---
+
+## 功能一览
+
+| 能力 | 说明 |
+|------|------|
+| 三源采集 | Claude / Codex / Grok Build 本地 JSONL |
+| 分项计价 | 输入 / 输出 / 缓存写 / 缓存读；可覆盖单价 |
+| 今日 / 近 7 日 | 总览 + 迷你柱；CLI 同步打印 |
+| 导出 CSV | 托盘菜单或 `npm run cli -- --csv out.csv` |
+| 系统托盘 | 显示隐藏、刷新、价目、开机自启、退出 |
+| 关窗进托盘 | ✕ = 隐藏；退出走托盘 |
+| 位置记忆 | 拖动后重启仍在原处 |
+| 源状态提示 | 目录缺失 / 无会话时可见，不装傻显示全 0 |
+| 便携包 | 无需安装 Node 即可运行 |
+
+---
+
+## 数据源路径
+
+| 工具 | 默认路径 | 内容 |
+|------|----------|------|
 | Claude Code | `~/.claude/projects/*/*.jsonl` | `message.usage` |
-| Codex | `~/.codex/sessions/**/*.jsonl` | `token_count` 事件 |
+| Codex | `~/.codex/sessions/**/*.jsonl` | `token_count` |
 | Grok Build | `~/.grok/sessions/**/updates.jsonl` | `turn_completed.usage` |
 
-工具仅读取这些文件，所有聚合和计价均在本地完成。
+可用环境变量覆盖根目录：`TOKENREC_CLAUDE_DIR` / `TOKENREC_CODEX_DIR` / `TOKENREC_GROK_DIR`。
 
-## 常用命令
+**只读**：从不修改或上传会话文件；计算全在本地。
 
-| 命令 | 用途 |
-| --- | --- |
-| `npm start` | 启动桌面悬浮窗 |
-| `npm run cli` | 在终端输出一次汇总 |
-| `npm test` | 运行 Node.js 单元测试 |
-| `npm run icon` | 生成桌面图标 |
-| `npm run shortcut` | 创建桌面快捷方式 |
+---
 
-## 计价与限制
+## 托盘菜单
 
-定价表位于 `src/pricing/pricing.json`，单位为美元/每百万 token。`grok-4.5-build-free` 按免费档计价；没有公开价格的自定义或代理模型会按匹配规则估算，并在界面与报表中标记。
+| 项 | 作用 |
+|----|------|
+| 显示 / 隐藏 | 切换悬浮窗 |
+| 立即刷新 | 立刻重扫会话 |
+| 导出 CSV… | 写入「下载」并定位 |
+| 打开价目覆盖文件 | `~/.token-record/pricing.override.json` |
+| 开机自启 | 登录后静默启动（托盘常驻） |
+| 退出 | 结束进程 |
 
-当前快捷方式方案直接使用项目内的 Electron 运行时，因此移动项目目录后，需要重新执行 `npm run shortcut`。
+---
+
+## 定价
+
+内置表：`src/pricing/pricing.json`（美元 / 百万 token）。
+
+推荐覆盖（不改仓库）：
+
+```text
+~/.token-record/pricing.override.json
+```
+
+```json
+{
+  "models": {
+    "claude-opus-4": { "input": 15, "output": 75, "cacheWrite": 18.75, "cacheRead": 1.5 }
+  }
+}
+```
+
+环境变量：`TOKENREC_PRICING_OVERRIDE`。  
+无公开价的自定义模型会**估算**并在界面标注。
+
+---
+
+## 周期与导出
+
+```bash
+npm run cli
+npm run cli -- --csv .cache/export.csv
+```
+
+- 快照字段：`period.today` / `period.last7` / `byDay` / `sources`
+- 按日历史：`.cache/daily.json`（约 90 天）
+
+---
+
+## 产品边界（明确不做）
+
+本产品有意保持小而完整，**不包含**：
+
+- 云同步、账号登录、多设备
+- 手机端 / 浏览器扩展
+- 第 4 家工具采集（Cursor 等留待后续版本评估）
+- 官方账单 API 对账（仅本地会话估算）
+- 团队协作、分享、后台服务
+
+真实需求出现时，应作为独立能力设计，而不是塞进悬浮窗。
+
+---
 
 ## 验证
 
@@ -81,4 +135,25 @@ npm test
 npm run cli
 ```
 
-测试覆盖采集器、聚合去重和计价器；CLI 可用于与实际会话记录交叉核对。
+测试覆盖：采集器、聚合去重、按日 period、价目覆盖、偏好、数据源健康检查。
+
+---
+
+## 架构
+
+```
+src/
+├── shared/       # 路径、JSONL、文件遍历
+├── collectors/   # claude / codex / grok
+├── pricing/      # pricing.json + calculator
+├── core/         # aggregator / store / sources
+├── cli.js
+├── main/         # Electron 主进程、托盘、偏好
+└── renderer/     # 悬浮窗 UI
+```
+
+---
+
+## 许可证
+
+MIT · Copyright © 2026 hkm-a

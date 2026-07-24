@@ -70,6 +70,9 @@ function buildCards() {
   }
   refs.grandTokens = document.getElementById('grandTokens');
   refs.grandCost = document.getElementById('grandCost');
+  refs.periodToday = document.getElementById('periodToday');
+  refs.periodWeek = document.getElementById('periodWeek');
+  refs.periodBars = document.getElementById('periodBars');
   refs.updatedAt = document.getElementById('updatedAt');
   refs.estimateNote = document.getElementById('estimateNote');
 }
@@ -94,12 +97,31 @@ function handleData(payload) {
     const pct = grandTotal > 0 ? (tokens / grandTotal) * 100 : 0;
     r.bar.style.width = pct.toFixed(1) + '%';
 
-    if (d) {
+    const src = snapshot.sources && snapshot.sources.tools && snapshot.sources.tools[t.key];
+    r.card.classList.toggle('is-muted', !!(src && src.status !== 'ok' && tokens === 0));
+
+    if (d && tokens > 0) {
       const cache = d.tokens.cacheWrite + d.tokens.cacheRead;
       r.breakdown.textContent = `入 ${formatCompact(d.tokens.input)} · 出 ${formatCompact(
         d.tokens.output
       )} · 存 ${formatCompact(cache)}`;
       r.today.textContent = `今日 +${formatCompact(d.today.total)}`;
+    } else if (src) {
+      // 无用量时展示数据源状态，避免新机器上只看到全 0
+      if (src.status === 'missing') {
+        r.breakdown.textContent = '目录不存在';
+        r.model.textContent = '未安装?';
+      } else if (src.status === 'empty') {
+        r.breakdown.textContent = '暂无会话文件';
+        r.model.textContent = '待产生';
+      } else if (src.status === 'error') {
+        r.breakdown.textContent = '读取失败';
+        r.model.textContent = '异常';
+      } else {
+        r.breakdown.textContent = '暂无计费事件';
+      }
+      r.today.textContent = src.hint || '';
+      r.card.title = `${src.label}\n${src.root}\n${src.message || ''}`;
     }
 
     // 变化动效：仅在非首帧且确有增长时触发，避免启动瞬间刷屏。
@@ -118,10 +140,21 @@ function handleData(payload) {
   animateValue(refs.grandCost, prevGrand.cost, snapshot.grand.cost || 0, 900, formatMoney);
   prevGrand = { tokens: grandTotal, cost: snapshot.grand.cost || 0 };
 
+  // 今日 / 近 7 日（折叠态也保留，方便一眼看到账单节奏）
+  updatePeriod(snapshot);
+  updateEmptyBanner(snapshot);
+
   // 状态栏
   const time = new Date(snapshot.generatedAt).toLocaleTimeString('zh-CN');
   refs.updatedAt.textContent = '更新于 ' + time;
-  refs.estimateNote.textContent = snapshot.grand.estimated ? '含估算定价' : '';
+  const notes = [];
+  if (snapshot.grand.estimated) notes.push('含估算定价');
+  if (snapshot.sources && snapshot.sources.allQuiet) notes.push('无会话数据');
+  else if (snapshot.sources && snapshot.sources.anyMissing) notes.push('部分源目录缺失');
+  // anyMissing may not exist - use missing count
+  else if (snapshot.sources && snapshot.sources.missing > 0) notes.push('部分源目录缺失');
+  else if (snapshot.sources && snapshot.sources.errors > 0) notes.push('部分源读取异常');
+  refs.estimateNote.textContent = notes.join(' · ');
 
   // 收银音效：本帧任一工具有增长且未静音时，响一声。
   if (anyIncrease && !muted) {
@@ -129,21 +162,102 @@ function handleData(payload) {
   }
 }
 
+// 全局空态横幅：三源皆无会话文件时展示引导。
+function updateEmptyBanner(snapshot) {
+  const banner = document.getElementById('emptyBanner');
+  const title = document.getElementById('emptyTitle');
+  const body = document.getElementById('emptyBody');
+  if (!banner || !title || !body) return;
+
+  const sources = snapshot.sources;
+  const quiet = !snapshot.grand || !snapshot.grand.total;
+  if (!sources || !quiet) {
+    banner.hidden = true;
+    return;
+  }
+
+  banner.hidden = false;
+  title.textContent = sources.allQuiet ? '暂无用量数据' : '数据不完整';
+  const lines = [];
+  if (sources.banner) lines.push(sources.banner);
+  for (const t of Object.values(sources.tools || {})) {
+    lines.push(`· ${t.label}：${t.message || t.status}`);
+    lines.push(`  ${t.hint}`);
+  }
+  body.textContent = lines.join('\n');
+}
+
+// 刷新周期区：文案 + 近 7 日迷你柱。
+function updatePeriod(snapshot) {
+  const period = snapshot.period || {};
+  const today = period.today || { total: 0, cost: 0 };
+  const last7 = period.last7 || { total: 0, cost: 0 };
+  if (refs.periodToday) {
+    refs.periodToday.textContent = `${formatMoney(today.cost || 0)} · ${formatCompact(today.total || 0)}`;
+  }
+  if (refs.periodWeek) {
+    refs.periodWeek.textContent = `${formatMoney(last7.cost || 0)} · ${formatCompact(last7.total || 0)}`;
+  }
+  if (!refs.periodBars) return;
+
+  const days = period.days || [];
+  const max = Math.max(1, ...days.map((d) => d.total || 0));
+  const todayKey = period.todayKey;
+  refs.periodBars.innerHTML = '';
+  for (const d of days) {
+    const bar = document.createElement('div');
+    bar.className = 'period-bar';
+    const total = d.total || 0;
+    if (total <= 0) {
+      bar.classList.add('is-empty');
+    } else {
+      bar.style.height = Math.max(4, Math.round((total / max) * 28)) + 'px';
+    }
+    if (d.date === todayKey) bar.classList.add('is-today');
+    bar.title = `${d.date}: ${formatCompact(total)} tokens · ${formatMoney(d.cost || 0)}`;
+    refs.periodBars.appendChild(bar);
+  }
+}
+
 // 绑定窗口控制按钮。
 function bindControls() {
-  document.getElementById('btnClose').addEventListener('click', () => window.api.quit());
+  // 关闭 = 隐藏到托盘（退出请用托盘菜单）
+  document.getElementById('btnClose').addEventListener('click', () => {
+    if (window.api.hide) window.api.hide();
+    else window.api.quit();
+  });
+  document.getElementById('btnClose').title = '隐藏到托盘';
   document.getElementById('btnRefresh').addEventListener('click', () => window.api.refreshNow());
 
   // 折叠/展开：仅保留标题栏与总览
   let compact = false;
   const btnMin = document.getElementById('btnMin');
-  btnMin.addEventListener('click', () => {
-    compact = !compact;
+  const applyCompactUi = (on) => {
+    compact = !!on;
     document.body.classList.toggle('compact', compact);
     btnMin.textContent = compact ? '▢' : '▁';
     btnMin.title = compact ? '展开' : '折叠';
+  };
+  btnMin.addEventListener('click', () => {
+    applyCompactUi(!compact);
     window.api.setCompact(compact);
   });
+  // 主进程恢复折叠偏好
+  if (window.api.onPrefs) {
+    window.api.onPrefs((p) => {
+      if (p && p.compact) applyCompactUi(true);
+      if (p && p.version) {
+        const el = document.getElementById('appVersion');
+        if (el) el.textContent = 'v' + p.version;
+      }
+    });
+  }
+  if (window.api.getVersion) {
+    window.api.getVersion().then((v) => {
+      const el = document.getElementById('appVersion');
+      if (el && v) el.textContent = 'v' + v;
+    });
+  }
 
   // 置顶
   let pinned = true;

@@ -6,7 +6,8 @@ const test = require('node:test');
 const assert = require('node:assert');
 const { loadTable, findRate, costOfTokens } = require('../src/pricing/calculator');
 
-const table = loadTable();
+// 测试禁用用户价目覆盖，保证用例可重复
+const table = loadTable({ overrideFile: false });
 
 test('最长子串匹配：claude-opus-4-8 命中 claude-opus-4', () => {
   const r = findRate('claude-opus-4-8', table);
