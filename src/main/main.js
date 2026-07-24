@@ -25,12 +25,15 @@ const {
   shouldStartHidden,
   buildLoginItemSettings,
 } = require('./prefs');
+const { checkForUpdate, httpDownload } = require('./updater');
 
 const REFRESH_MS = 2000;
-const WIN_W = 400;
-const EXPANDED_H = 660;
-const COMPACT_H = 210;
+// 加宽加高，避免周期区 + 三卡 + 状态挤在一起
+const WIN_W = 460;
+const EXPANDED_H = 780;
+const COMPACT_H = 268;
 const APP_VERSION = require('../../package.json').version;
+const UPDATE_CHECK_DELAY_MS = 12000; // 启动后延迟检查，避免抢首屏
 
 let win = null;
 let tray = null;
@@ -276,6 +279,82 @@ function doExport() {
   }
 }
 
+async function runUpdateCheck(opts = {}) {
+  const silent = !!opts.silent;
+  try {
+    const result = await checkForUpdate(APP_VERSION);
+    if (!result.updateAvailable) {
+      if (!silent) {
+        dialog.showMessageBox({
+          type: 'info',
+          title: '检查更新',
+          message: `已是最新版本 v${result.currentVersion}`,
+          detail: result.latest && result.latest.htmlUrl ? `发布页：${result.latest.htmlUrl}` : '',
+          buttons: ['好的'],
+        });
+      }
+      return result;
+    }
+
+    const latest = result.latest;
+    const detail = [
+      `当前：v${result.currentVersion}`,
+      `最新：v${result.latestVersion}`,
+      latest.assetName ? `安装包：${latest.assetName}` : '',
+      '',
+      '便携版需下载新 exe 后自行替换运行（无法覆盖正在运行的文件）。',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    const { response } = await dialog.showMessageBox({
+      type: 'info',
+      title: '发现新版本',
+      message: `Token 记录 v${result.latestVersion} 可用`,
+      detail,
+      buttons: latest.downloadUrl
+        ? ['下载便携版', '打开发布页', '稍后']
+        : ['打开发布页', '稍后'],
+      defaultId: 0,
+      cancelId: latest.downloadUrl ? 2 : 1,
+    });
+
+    if (latest.downloadUrl && response === 0) {
+      const dest = path.join(
+        app.getPath('downloads'),
+        latest.assetName || `TokenRecord-${result.latestVersion}-portable.exe`
+      );
+      try {
+        await httpDownload(latest.downloadUrl, dest);
+        shell.showItemInFolder(dest);
+        dialog.showMessageBox({
+          type: 'info',
+          title: '下载完成',
+          message: '新版本已保存到「下载」文件夹',
+          detail: `${dest}\n\n请退出当前应用后运行新 exe。`,
+          buttons: ['好的'],
+        });
+      } catch (err) {
+        dialog.showErrorBox('下载失败', String(err && err.message ? err.message : err));
+        if (latest.htmlUrl) shell.openExternal(latest.htmlUrl);
+      }
+    } else if (
+      (latest.downloadUrl && response === 1) ||
+      (!latest.downloadUrl && response === 0)
+    ) {
+      if (latest.htmlUrl) shell.openExternal(latest.htmlUrl);
+    }
+    return result;
+  } catch (err) {
+    if (!silent) {
+      dialog.showErrorBox('检查更新失败', String(err && err.message ? err.message : err));
+    } else {
+      console.error('静默检查更新失败：', err);
+    }
+    return null;
+  }
+}
+
 function rebuildTrayMenu() {
   if (!tray || tray.isDestroyed()) return;
   const openLogin = isOpenAtLoginEnabled();
@@ -290,6 +369,7 @@ function rebuildTrayMenu() {
     { type: 'separator' },
     { label: '导出 CSV…', click: () => exportCsvFromTray() },
     { label: '打开价目覆盖文件', click: () => openPricingOverride() },
+    { label: '检查更新…', click: () => runUpdateCheck({ silent: false }) },
     {
       label: '开机自启',
       type: 'checkbox',
@@ -353,6 +433,13 @@ function bootstrap() {
       tick();
     });
     timer = setInterval(tick, REFRESH_MS);
+
+    // 启动后静默检查更新（截图模式跳过）
+    if (!process.env.TOKENREC_SHOT) {
+      setTimeout(() => {
+        runUpdateCheck({ silent: true });
+      }, UPDATE_CHECK_DELAY_MS);
+    }
 
     if (process.env.TOKENREC_SHOT) {
       win.webContents.once('did-finish-load', () => {

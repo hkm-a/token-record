@@ -21,7 +21,7 @@ body {
 
 /* 四周留透明边距容纳阴影，避免透明窗口下阴影被窗口矩形裁成直角方块 */
 body {
-  padding: 20px;
+  padding: 18px;
   box-sizing: border-box;
 }
 
@@ -73,7 +73,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px 10px;
+  padding: 16px 20px 12px;
 }
 
 .brand {
@@ -135,20 +135,23 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 6px 16px 16px;
+  padding: 4px 22px 14px;
+  gap: 8px;
 }
 
 .ov-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
+  min-width: 0;
 }
 
 .ov-num {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
+  line-height: 1.15;
   background: linear-gradient(180deg, #ffffff, #b9c0d0);
   -webkit-background-clip: text;
   background-clip: text;
@@ -170,7 +173,8 @@ body {
 
 .ov-divider {
   width: 1px;
-  height: 34px;
+  height: 40px;
+  flex-shrink: 0;
   background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.14), transparent);
 }
 
@@ -178,46 +182,47 @@ body {
 .period {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 18px 12px;
+  gap: 12px;
+  padding: 0 20px 16px;
 }
 
 .period-stats {
   display: flex;
   justify-content: space-between;
-  gap: 10px;
+  gap: 12px;
 }
 
 .period-item {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  padding: 8px 10px;
-  border-radius: 10px;
+  gap: 4px;
+  padding: 12px 14px;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .period-label {
-  font-size: 10px;
+  font-size: 11px;
   color: #8990a0;
   letter-spacing: 0.4px;
 }
 
 .period-val {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: #d7dbe8;
   font-variant-numeric: tabular-nums;
+  line-height: 1.3;
 }
 
 .period-bars {
   display: flex;
   align-items: flex-end;
-  gap: 4px;
-  height: 28px;
-  padding: 0 2px;
+  gap: 6px;
+  height: 36px;
+  padding: 2px 4px 0;
 }
 
 .period-bar {
@@ -242,12 +247,14 @@ body {
 
 /* ---------- 空态横幅 ---------- */
 .empty-banner {
-  margin: 0 16px 10px;
-  padding: 10px 12px;
+  margin: 0 20px 12px;
+  padding: 12px 14px;
   border-radius: 12px;
   background: rgba(255, 196, 90, 0.08);
   border: 1px solid rgba(255, 196, 90, 0.22);
   color: #e8d9b0;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .empty-banner[hidden] {
@@ -257,13 +264,13 @@ body {
 .empty-title {
   font-size: 12px;
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
   color: #f0d58a;
 }
 
 .empty-body {
-  font-size: 10.5px;
-  line-height: 1.45;
+  font-size: 11px;
+  line-height: 1.5;
   white-space: pre-wrap;
   color: #c9b98a;
   opacity: 0.95;
@@ -282,24 +289,31 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 11px;
-  padding: 2px 14px 10px;
+  gap: 14px;
+  padding: 4px 20px 14px;
   overflow-y: auto;
+  min-height: 0;
 }
 
 .cards::-webkit-scrollbar {
-  width: 0;
+  width: 4px;
+}
+
+.cards::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
 }
 
 .card {
   position: relative;
-  padding: 13px 15px 12px;
-  border-radius: 15px;
+  padding: 16px 18px 14px;
+  border-radius: 16px;
   overflow: hidden;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-left: 3px solid var(--accent);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  flex-shrink: 0;
 }
 
 .card:hover {
@@ -321,8 +335,8 @@ body {
 .card-head {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 9px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 
 .tool-dot {
@@ -334,16 +348,16 @@ body {
 }
 
 .tool-name {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #e6e9f0;
 }
 
 .tool-model {
   margin-left: auto;
-  font-size: 10.5px;
+  font-size: 11px;
   color: #868d9d;
-  max-width: 130px;
+  max-width: 150px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -353,7 +367,8 @@ body {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  gap: 12px;
 }
 
 .card-main .metric {
@@ -363,31 +378,33 @@ body {
 }
 
 .card-main .tokens {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
   color: #f2f4f8;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
+  line-height: 1.15;
 }
 
 .card-main .unit {
-  font-size: 11px;
+  font-size: 12px;
   color: #7f8698;
 }
 
 .card-main .cost {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--accent);
   text-shadow: 0 0 16px color-mix(in srgb, var(--accent) 55%, transparent);
+  flex-shrink: 0;
 }
 
 /* 进度条：该工具 token 占总量比例 */
 .bar {
-  height: 4px;
+  height: 5px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
-  margin-bottom: 9px;
+  margin-bottom: 11px;
 }
 
 .bar-fill {
@@ -403,7 +420,9 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 10.5px;
+  gap: 10px;
+  font-size: 11.5px;
+  line-height: 1.35;
 }
 
 .breakdown {
@@ -471,9 +490,9 @@ body {
 .statusbar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 9px 16px 12px;
-  font-size: 10.5px;
+  gap: 10px;
+  padding: 12px 20px 14px;
+  font-size: 11px;
   color: #7d8496;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
@@ -515,12 +534,12 @@ body.compact .empty-banner {
 }
 
 body.compact .overview {
-  padding-top: 10px;
-  padding-bottom: 8px;
+  padding-top: 8px;
+  padding-bottom: 10px;
 }
 
 body.compact .period {
-  padding-bottom: 14px;
+  padding-bottom: 18px;
 }
 
 /* 音效关闭态按钮 */

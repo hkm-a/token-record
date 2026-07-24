@@ -8,7 +8,7 @@
 
 ![折叠态](docs/preview-compact.png)
 
-**当前版本：v1.3.0** · [Releases](https://github.com/hkm-a/token-record/releases)
+**当前版本：v1.4.0** · [Releases](https://github.com/hkm-a/token-record/releases)
 
 ---
 
@@ -49,6 +49,7 @@ AI 编码工具的用量分散在各自本地会话里，难以横向比较。�
 | 位置记忆 | 拖动后重启仍在原处 |
 | 源状态提示 | 目录缺失 / 无会话时可见，不装傻显示全 0 |
 | 便携包 | 无需安装 Node 即可运行 |
+| 自动更新 | 启动静默检查 GitHub Release；托盘可手动检查并下载便携包 |
 
 ---
 
@@ -74,8 +75,11 @@ AI 编码工具的用量分散在各自本地会话里，难以横向比较。�
 | 立即刷新 | 立刻重扫会话 |
 | 导出 CSV… | 写入「下载」并定位 |
 | 打开价目覆盖文件 | `~/.token-record/pricing.override.json` |
+| 检查更新… | 查询 GitHub 最新版；可下载 portable 到「下载」文件夹 |
 | 开机自启 | 登录后静默启动（托盘常驻） |
 | 退出 | 结束进程 |
+
+启动约 12 秒后会**静默**检查更新；有新版本才弹窗。便携版无法覆盖正在运行的文件，下载后请退出再运行新 exe。
 
 ---
 
