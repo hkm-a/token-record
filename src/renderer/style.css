@@ -520,17 +520,69 @@ body {
   color: #5c6374;
 }
 
-/* 折叠：只留总览 + 7日条 */
+/* ---------- 折叠态：只留标题栏 + 两个大数字 ---------- */
 body.compact .cards,
 body.compact .statusbar,
-body.compact .empty-banner {
+body.compact .empty-banner,
+body.compact .spark,
+body.compact .ov-sub {
   display: none !important;
 }
 
-body.compact .overview {
-  padding-bottom: 6px;
+body.compact .titlebar {
+  padding: 8px 12px 2px;
 }
 
-body.compact .spark {
-  padding-bottom: 14px;
+body.compact .brand-text {
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+body.compact .wc-btn {
+  width: 24px;
+  height: 24px;
+  font-size: 11px;
+}
+
+body.compact .overview {
+  padding: 2px 18px 12px;
+  gap: 6px;
+}
+
+body.compact .ov-item {
+  gap: 0;
+  position: relative;
+  padding: 4px 0 2px;
+}
+
+/* 大数字下方极小单位，不抢戏 */
+body.compact .ov-item::after {
+  font-size: 10px;
+  color: #6d7383;
+  letter-spacing: 0.4px;
+  margin-top: 2px;
+}
+
+body.compact .ov-item:first-child::after {
+  content: 'tokens';
+}
+
+body.compact .ov-item:last-child::after {
+  content: 'cost';
+}
+
+body.compact .ov-num {
+  font-size: 30px;
+  letter-spacing: 0.3px;
+  line-height: 1.05;
+}
+
+body.compact .ov-divider {
+  margin: 8px 0;
+  opacity: 0.9;
+}
+
+/* 折叠时整块更像一条悬浮胶囊 */
+body.compact #app {
+  border-radius: 16px;
 }

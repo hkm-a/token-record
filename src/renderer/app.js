@@ -241,6 +241,10 @@ function bindControls() {
   btnMin.addEventListener('click', () => {
     applyCompactUi(!compact);
     window.api.setCompact(compact);
+    // 折叠后只剩两大指标，下一帧收紧窗口
+    requestAnimationFrame(() => {
+      if (window.api && window.api.fitContent) window.api.fitContent();
+    });
   });
   if (window.api.onPrefs) {
     window.api.onPrefs((p) => {

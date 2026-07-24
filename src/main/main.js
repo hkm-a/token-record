@@ -31,7 +31,7 @@ const REFRESH_MS = 2000;
 // 展开高度仅作初值，随后按内容 fit 收紧，消除底部空白
 const WIN_W = 420;
 const EXPANDED_H = 560;
-const COMPACT_H = 188;
+const COMPACT_H = 112; // 仅标题栏 + 两个大数字
 const BODY_PAD = 24; // 与 style.css body padding*2 对齐
 const APP_VERSION = require('../../package.json').version;
 const UPDATE_CHECK_DELAY_MS = 12000; // 启动后延迟检查，避免抢首屏
@@ -187,31 +187,32 @@ function applyCompact(compact) {
     win.setSize(WIN_W, COMPACT_H, true);
   } else {
     win.setSize(WIN_W, EXPANDED_H, true);
-    // 展开后按真实内容收高度，去掉卡片区与状态栏之间的空洞
-    setTimeout(() => fitWindowToContent(), 40);
   }
   win.setResizable(false);
   persistPrefs({ compact: !!compact });
+  // 折叠/展开后都按真实 DOM 收紧高度
+  setTimeout(() => fitWindowToContent(), 50);
 }
 
 // 按 #app 实际高度调整窗口，避免固定高度大于内容导致底部空白
 async function fitWindowToContent() {
   if (!win || win.isDestroyed() || process.env.TOKENREC_SHOT) return;
-  if (prefs && prefs.compact) return;
   try {
     const contentH = await win.webContents.executeJavaScript(`
       (() => {
         const app = document.getElementById('app');
         if (!app) return 0;
         const rect = app.getBoundingClientRect();
-        // body 上下 padding
         return Math.ceil(rect.height + ${BODY_PAD});
       })()
     `);
-    if (!contentH || contentH < 200) return;
-    const target = Math.min(Math.max(contentH, 360), 900);
+    if (!contentH || contentH < 80) return;
+    const isCompact = !!(prefs && prefs.compact);
+    const minH = isCompact ? 88 : 320;
+    const maxH = isCompact ? 160 : 900;
+    const target = Math.min(Math.max(contentH, minH), maxH);
     const [, curH] = win.getSize();
-    if (Math.abs(curH - target) < 4) return;
+    if (Math.abs(curH - target) < 3) return;
     win.setResizable(true);
     win.setSize(WIN_W, target, true);
     win.setResizable(false);
