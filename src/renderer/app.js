@@ -51,7 +51,11 @@ function buildCards() {
       </div>
       <div class="bar"><div class="bar-fill"></div></div>
       <div class="card-foot">
-        <span class="breakdown">暂无数据</span>
+        <div class="stat-chips">
+          <span class="chip chip-in">入 <b class="chip-in-val">0</b></span>
+          <span class="chip chip-out">出 <b class="chip-out-val">0</b></span>
+          <span class="chip chip-cache">存 <b class="chip-cache-val">0</b></span>
+        </div>
         <span class="today">今日 +0</span>
       </div>
       <div class="bubble-layer"></div>`;
@@ -62,7 +66,10 @@ function buildCards() {
       cost: card.querySelector('.cost'),
       model: card.querySelector('.tool-model'),
       bar: card.querySelector('.bar-fill'),
-      breakdown: card.querySelector('.breakdown'),
+      chipIn: card.querySelector('.chip-in-val'),
+      chipOut: card.querySelector('.chip-out-val'),
+      chipCache: card.querySelector('.chip-cache-val'),
+      chips: card.querySelector('.stat-chips'),
       today: card.querySelector('.today'),
       bubbles: card.querySelector('.bubble-layer'),
     };
@@ -102,26 +109,32 @@ function handleData(payload) {
 
     if (d && tokens > 0) {
       const cache = d.tokens.cacheWrite + d.tokens.cacheRead;
-      r.breakdown.textContent = `入 ${formatCompact(d.tokens.input)} · 出 ${formatCompact(
-        d.tokens.output
-      )} · 存 ${formatCompact(cache)}`;
+      r.chipIn.textContent = formatCompact(d.tokens.input);
+      r.chipOut.textContent = formatCompact(d.tokens.output);
+      r.chipCache.textContent = formatCompact(cache);
+      r.chips.hidden = false;
       r.today.textContent = `今日 +${formatCompact(d.today.total)}`;
+      r.today.title = '';
     } else if (src) {
       // 无用量时展示数据源状态，避免新机器上只看到全 0
+      r.chips.hidden = true;
       if (src.status === 'missing') {
-        r.breakdown.textContent = '目录不存在';
+        r.today.textContent = '目录不存在';
         r.model.textContent = '未安装?';
       } else if (src.status === 'empty') {
-        r.breakdown.textContent = '暂无会话文件';
+        r.today.textContent = '暂无会话';
         r.model.textContent = '待产生';
       } else if (src.status === 'error') {
-        r.breakdown.textContent = '读取失败';
+        r.today.textContent = '读取失败';
         r.model.textContent = '异常';
       } else {
-        r.breakdown.textContent = '暂无计费事件';
+        r.today.textContent = '暂无计费事件';
       }
-      r.today.textContent = src.hint || '';
+      r.today.title = `${src.message || ''}\n${src.hint || ''}\n${src.root || ''}`;
       r.card.title = `${src.label}\n${src.root}\n${src.message || ''}`;
+    } else {
+      r.chips.hidden = true;
+      r.today.textContent = '暂无数据';
     }
 
     // 变化动效：仅在非首帧且确有增长时触发，避免启动瞬间刷屏。
@@ -193,10 +206,14 @@ function updatePeriod(snapshot) {
   const today = period.today || { total: 0, cost: 0 };
   const last7 = period.last7 || { total: 0, cost: 0 };
   if (refs.periodToday) {
-    refs.periodToday.textContent = `${formatMoney(today.cost || 0)} · ${formatCompact(today.total || 0)}`;
+    refs.periodToday.innerHTML = `<span class="period-cost">${formatMoney(
+      today.cost || 0
+    )}</span><span class="period-tok">${formatCompact(today.total || 0)} tok</span>`;
   }
   if (refs.periodWeek) {
-    refs.periodWeek.textContent = `${formatMoney(last7.cost || 0)} · ${formatCompact(last7.total || 0)}`;
+    refs.periodWeek.innerHTML = `<span class="period-cost">${formatMoney(
+      last7.cost || 0
+    )}</span><span class="period-tok">${formatCompact(last7.total || 0)} tok</span>`;
   }
   if (!refs.periodBars) return;
 

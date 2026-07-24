@@ -8,7 +8,7 @@
 
 ![折叠态](docs/preview-compact.png)
 
-**当前版本：v1.4.0** · [Releases](https://github.com/hkm-a/token-record/releases)
+**当前版本：v1.4.1** · [Releases](https://github.com/hkm-a/token-record/releases)
 
 ---
 

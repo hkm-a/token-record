@@ -1,5 +1,4 @@
-/* Token 记录悬浮窗样式：深色玻璃拟态 + 三色品牌卡 + 数值动画。
-   设计目标：在桌面之上呈现一块精致、克制、有呼吸感的信息卡，数值变化有明确视觉反馈。 */
+/* Token 记录悬浮窗：深色玻璃拟态 + 宽松间距（v1.4.1） */
 
 * {
   margin: 0;
@@ -19,13 +18,12 @@ body {
   color: #eaecf2;
 }
 
-/* 四周留透明边距容纳阴影，避免透明窗口下阴影被窗口矩形裁成直角方块 */
+/* 阴影边距 */
 body {
-  padding: 18px;
+  padding: 16px;
   box-sizing: border-box;
 }
 
-/* 数字统一使用等宽数字，滚动时不抖动 */
 .num {
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
@@ -37,16 +35,15 @@ body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  border-radius: 20px;
+  border-radius: 22px;
   overflow: hidden;
-  background: linear-gradient(160deg, rgba(30, 32, 46, 0.82), rgba(15, 16, 23, 0.9));
+  background: linear-gradient(160deg, rgba(30, 32, 46, 0.88), rgba(15, 16, 23, 0.94));
   backdrop-filter: blur(32px) saturate(160%);
   -webkit-backdrop-filter: blur(32px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
-/* 顶部环境光晕：三色微光，营造层次 */
 #app::before {
   content: '';
   position: absolute;
@@ -54,9 +51,9 @@ body {
   left: -25%;
   width: 150%;
   height: 70%;
-  background: radial-gradient(ellipse at 25% 40%, rgba(217, 119, 87, 0.2), transparent 55%),
-    radial-gradient(ellipse at 60% 30%, rgba(16, 163, 127, 0.16), transparent 55%),
-    radial-gradient(ellipse at 85% 45%, rgba(155, 140, 255, 0.2), transparent 55%);
+  background: radial-gradient(ellipse at 25% 40%, rgba(217, 119, 87, 0.18), transparent 55%),
+    radial-gradient(ellipse at 60% 30%, rgba(16, 163, 127, 0.14), transparent 55%),
+    radial-gradient(ellipse at 85% 45%, rgba(155, 140, 255, 0.18), transparent 55%);
   filter: blur(8px);
   pointer-events: none;
   z-index: 0;
@@ -73,25 +70,26 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px 12px;
+  padding: 18px 22px 12px;
+  flex-shrink: 0;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
 }
 
 .brand-mark {
-  width: 12px;
-  height: 12px;
+  width: 13px;
+  height: 13px;
   border-radius: 4px;
   background: conic-gradient(from 120deg, #d97757, #10a37f, #9b8cff, #d97757);
-  box-shadow: 0 0 12px rgba(155, 140, 255, 0.6);
+  box-shadow: 0 0 12px rgba(155, 140, 255, 0.55);
 }
 
 .brand-text {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: 0.3px;
   color: #cfd3df;
@@ -100,17 +98,17 @@ body {
 .win-controls {
   -webkit-app-region: no-drag;
   display: flex;
-  gap: 4px;
+  gap: 6px;
 }
 
 .wc-btn {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   border: none;
-  border-radius: 8px;
+  border-radius: 9px;
   background: rgba(255, 255, 255, 0.05);
   color: #aeb4c2;
-  font-size: 12px;
+  font-size: 13px;
   cursor: pointer;
   transition: background 0.2s, color 0.2s, transform 0.15s;
 }
@@ -130,28 +128,33 @@ body {
   color: #fff;
 }
 
+.wc-btn.muted {
+  opacity: 0.45;
+}
+
 /* ---------- 总览 ---------- */
 .overview {
   display: flex;
   align-items: center;
   justify-content: space-around;
-  padding: 4px 22px 14px;
-  gap: 8px;
+  padding: 6px 24px 16px;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 .ov-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   min-width: 0;
 }
 
 .ov-num {
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
-  letter-spacing: 0.4px;
-  line-height: 1.15;
+  letter-spacing: 0.3px;
+  line-height: 1.1;
   background: linear-gradient(180deg, #ffffff, #b9c0d0);
   -webkit-background-clip: text;
   background-clip: text;
@@ -166,14 +169,14 @@ body {
 }
 
 .ov-label {
-  font-size: 11px;
+  font-size: 12px;
   color: #8990a0;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.4px;
 }
 
 .ov-divider {
   width: 1px;
-  height: 40px;
+  height: 48px;
   flex-shrink: 0;
   background: linear-gradient(180deg, transparent, rgba(255, 255, 255, 0.14), transparent);
 }
@@ -182,79 +185,93 @@ body {
 .period {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 0 20px 16px;
+  gap: 14px;
+  padding: 0 22px 18px;
+  flex-shrink: 0;
 }
 
 .period-stats {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 14px;
 }
 
 .period-item {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  border-radius: 12px;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 14px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .period-label {
-  font-size: 11px;
+  font-size: 12px;
   color: #8990a0;
   letter-spacing: 0.4px;
 }
 
 .period-val {
-  font-size: 13px;
-  font-weight: 600;
-  color: #d7dbe8;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.period-cost {
+  font-size: 18px;
+  font-weight: 700;
+  color: #e8ecf5;
   font-variant-numeric: tabular-nums;
-  line-height: 1.3;
+  line-height: 1.2;
+}
+
+.period-tok {
+  font-size: 12px;
+  color: #8b92a3;
+  font-variant-numeric: tabular-nums;
 }
 
 .period-bars {
   display: flex;
   align-items: flex-end;
-  gap: 6px;
-  height: 36px;
-  padding: 2px 4px 0;
+  gap: 7px;
+  height: 40px;
+  padding: 4px 2px 0;
 }
 
 .period-bar {
   flex: 1;
-  min-height: 3px;
-  border-radius: 3px 3px 1px 1px;
-  background: linear-gradient(180deg, rgba(111, 240, 192, 0.85), rgba(23, 163, 127, 0.35));
-  opacity: 0.85;
+  min-height: 4px;
+  border-radius: 4px 4px 2px 2px;
+  background: linear-gradient(180deg, rgba(111, 240, 192, 0.9), rgba(23, 163, 127, 0.35));
+  opacity: 0.9;
   transition: height 0.35s ease;
 }
 
 .period-bar.is-empty {
   background: rgba(255, 255, 255, 0.08);
-  opacity: 0.5;
-  min-height: 3px;
-  height: 3px !important;
+  opacity: 0.45;
+  min-height: 4px;
+  height: 4px !important;
 }
 
 .period-bar.is-today {
-  box-shadow: 0 0 8px rgba(111, 240, 192, 0.45);
+  box-shadow: 0 0 10px rgba(111, 240, 192, 0.5);
 }
 
-/* ---------- 空态横幅 ---------- */
+/* ---------- 空态 ---------- */
 .empty-banner {
-  margin: 0 20px 12px;
-  padding: 12px 14px;
-  border-radius: 12px;
+  margin: 0 22px 14px;
+  padding: 14px 16px;
+  border-radius: 14px;
   background: rgba(255, 196, 90, 0.08);
   border: 1px solid rgba(255, 196, 90, 0.22);
   color: #e8d9b0;
-  max-height: 120px;
+  max-height: 110px;
   overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .empty-banner[hidden] {
@@ -262,26 +279,21 @@ body {
 }
 
 .empty-title {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   margin-bottom: 6px;
   color: #f0d58a;
 }
 
 .empty-body {
-  font-size: 11px;
+  font-size: 11.5px;
   line-height: 1.5;
   white-space: pre-wrap;
   color: #c9b98a;
-  opacity: 0.95;
 }
 
 .card.is-muted {
-  opacity: 0.72;
-}
-
-.card.is-muted .breakdown {
-  color: #a89b7a;
+  opacity: 0.75;
 }
 
 /* ---------- 卡片区 ---------- */
@@ -289,36 +301,36 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 4px 20px 14px;
+  gap: 16px;
+  padding: 2px 22px 16px;
   overflow-y: auto;
   min-height: 0;
 }
 
 .cards::-webkit-scrollbar {
-  width: 4px;
+  width: 5px;
 }
 
 .cards::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.14);
   border-radius: 4px;
 }
 
 .card {
   position: relative;
-  padding: 16px 18px 14px;
-  border-radius: 16px;
+  padding: 18px 18px 16px;
+  border-radius: 18px;
   overflow: hidden;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.02));
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-left: 3px solid var(--accent);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
   flex-shrink: 0;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
 }
 
 .card-glow {
@@ -328,7 +340,7 @@ body {
   width: 70%;
   height: 180%;
   background: radial-gradient(circle, var(--accent), transparent 65%);
-  opacity: 0.14;
+  opacity: 0.12;
   pointer-events: none;
 }
 
@@ -336,7 +348,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
 }
 
 .tool-dot {
@@ -345,6 +357,7 @@ body {
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 10px var(--accent);
+  flex-shrink: 0;
 }
 
 .tool-name {
@@ -355,9 +368,9 @@ body {
 
 .tool-model {
   margin-left: auto;
-  font-size: 11px;
+  font-size: 12px;
   color: #868d9d;
-  max-width: 150px;
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -367,22 +380,23 @@ body {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  margin-bottom: 12px;
-  gap: 12px;
+  margin-bottom: 14px;
+  gap: 14px;
 }
 
 .card-main .metric {
   display: flex;
   align-items: baseline;
-  gap: 5px;
+  gap: 6px;
+  min-width: 0;
 }
 
 .card-main .tokens {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 700;
   color: #f2f4f8;
-  letter-spacing: 0.3px;
-  line-height: 1.15;
+  letter-spacing: 0.2px;
+  line-height: 1.1;
 }
 
 .card-main .unit {
@@ -391,20 +405,19 @@ body {
 }
 
 .card-main .cost {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--accent);
   text-shadow: 0 0 16px color-mix(in srgb, var(--accent) 55%, transparent);
   flex-shrink: 0;
 }
 
-/* 进度条：该工具 token 占总量比例 */
 .bar {
   height: 5px;
   border-radius: 4px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
-  margin-bottom: 11px;
+  margin-bottom: 14px;
 }
 
 .bar-fill {
@@ -416,30 +429,52 @@ body {
   transition: width 0.85s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* 脚注：芯片 + 今日，两行布局不挤 */
 .card-foot {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: stretch;
   gap: 10px;
-  font-size: 11.5px;
-  line-height: 1.35;
 }
 
-.breakdown {
-  color: #7d8496;
+.stat-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  color: #9aa1b2;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  line-height: 1.2;
+}
+
+.chip b {
+  font-weight: 650;
+  color: #d5dae6;
+  font-variant-numeric: tabular-nums;
 }
 
 .today {
-  color: var(--accent);
+  align-self: flex-end;
+  font-size: 12px;
   font-weight: 600;
-  opacity: 0.9;
+  color: var(--accent);
+  opacity: 0.95;
+  line-height: 1.3;
 }
 
-/* 增量气泡层 */
 .bubble-layer {
   position: absolute;
-  top: 30px;
-  right: 16px;
+  top: 36px;
+  right: 18px;
   height: 40px;
   pointer-events: none;
 }
@@ -468,7 +503,6 @@ body {
   }
 }
 
-/* 卡片脉冲高亮：数值增加时触发 */
 .card.pulse {
   animation: cardPulse 0.9s ease-out;
 }
@@ -476,7 +510,6 @@ body {
 @keyframes cardPulse {
   0% {
     box-shadow: 0 0 0 0 color-mix(in srgb, var(--accent) 55%, transparent);
-    border-left-color: var(--accent);
   }
   30% {
     box-shadow: 0 0 22px 3px color-mix(in srgb, var(--accent) 60%, transparent);
@@ -491,10 +524,11 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 20px 14px;
-  font-size: 11px;
+  padding: 14px 22px 16px;
+  font-size: 12px;
   color: #7d8496;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  flex-shrink: 0;
 }
 
 .statusbar .spacer {
@@ -506,12 +540,13 @@ body {
 }
 
 .live-dot {
-  width: 7px;
-  height: 7px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   background: #2ecf87;
   box-shadow: 0 0 8px #2ecf87;
   animation: breathe 2s ease-in-out infinite;
+  flex-shrink: 0;
 }
 
 @keyframes breathe {
@@ -526,30 +561,25 @@ body {
   }
 }
 
-/* ---------- 折叠模式：保留标题栏、总览与今日/近7日 ---------- */
+.app-version {
+  margin-left: 8px;
+  font-size: 11px;
+  color: #6d7383;
+  letter-spacing: 0.3px;
+}
+
+/* ---------- 折叠 ---------- */
 body.compact .cards,
 body.compact .statusbar,
 body.compact .empty-banner {
-  display: none;
+  display: none !important;
 }
 
 body.compact .overview {
-  padding-top: 8px;
-  padding-bottom: 10px;
+  padding-top: 10px;
+  padding-bottom: 12px;
 }
 
 body.compact .period {
-  padding-bottom: 18px;
-}
-
-/* 音效关闭态按钮 */
-.wc-btn.muted {
-  opacity: 0.45;
-}
-
-.app-version {
-  margin-left: 8px;
-  font-size: 10px;
-  color: #6d7383;
-  letter-spacing: 0.3px;
+  padding-bottom: 22px;
 }

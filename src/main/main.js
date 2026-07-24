@@ -28,10 +28,10 @@ const {
 const { checkForUpdate, httpDownload } = require('./updater');
 
 const REFRESH_MS = 2000;
-// 加宽加高，避免周期区 + 三卡 + 状态挤在一起
-const WIN_W = 460;
-const EXPANDED_H = 780;
-const COMPACT_H = 268;
+// 再放宽一档：卡片脚注改芯片布局后需要更高窗口
+const WIN_W = 500;
+const EXPANDED_H = 880;
+const COMPACT_H = 300;
 const APP_VERSION = require('../../package.json').version;
 const UPDATE_CHECK_DELAY_MS = 12000; // 启动后延迟检查，避免抢首屏
 
