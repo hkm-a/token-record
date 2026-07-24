@@ -38,12 +38,13 @@ function buildCards() {
     const card = document.createElement('div');
     card.className = 'card';
     card.style.setProperty('--accent', t.accent);
+    // 右上角放「今日」；模型名放到工具名 title，脚注只留入/出/存芯片以压低卡片高度
     card.innerHTML = `
       <div class="card-glow"></div>
       <div class="card-head">
         <span class="tool-dot"></span>
         <span class="tool-name">${t.name}</span>
-        <span class="tool-model">—</span>
+        <span class="tool-today">今日 +0</span>
       </div>
       <div class="card-main">
         <div class="metric"><span class="num tokens">0</span><span class="unit">tokens</span></div>
@@ -56,7 +57,6 @@ function buildCards() {
           <span class="chip chip-out">出 <b class="chip-out-val">0</b></span>
           <span class="chip chip-cache">存 <b class="chip-cache-val">0</b></span>
         </div>
-        <span class="today">今日 +0</span>
       </div>
       <div class="bubble-layer"></div>`;
     wrap.appendChild(card);
@@ -64,13 +64,13 @@ function buildCards() {
       card,
       tokens: card.querySelector('.tokens'),
       cost: card.querySelector('.cost'),
-      model: card.querySelector('.tool-model'),
+      nameEl: card.querySelector('.tool-name'),
+      today: card.querySelector('.tool-today'),
       bar: card.querySelector('.bar-fill'),
       chipIn: card.querySelector('.chip-in-val'),
       chipOut: card.querySelector('.chip-out-val'),
       chipCache: card.querySelector('.chip-cache-val'),
       chips: card.querySelector('.stat-chips'),
-      today: card.querySelector('.today'),
       bubbles: card.querySelector('.bubble-layer'),
     };
     prev[t.key] = { tokens: 0, cost: 0 };
@@ -99,7 +99,9 @@ function handleData(payload) {
     animateValue(r.tokens, prev[t.key].tokens, tokens, 900, formatCompact);
     animateValue(r.cost, prev[t.key].cost, cost, 900, formatMoney);
 
-    r.model.textContent = d ? pickMainModel(d.models) : '—';
+    const modelLabel = d ? pickMainModel(d.models) : '';
+    // 模型名改到悬停提示，右上角让位给「今日」
+    r.nameEl.title = modelLabel && modelLabel !== '—' ? modelLabel : t.name;
 
     const pct = grandTotal > 0 ? (tokens / grandTotal) * 100 : 0;
     r.bar.style.width = pct.toFixed(1) + '%';
@@ -114,27 +116,23 @@ function handleData(payload) {
       r.chipCache.textContent = formatCompact(cache);
       r.chips.hidden = false;
       r.today.textContent = `今日 +${formatCompact(d.today.total)}`;
-      r.today.title = '';
+      r.today.title = modelLabel ? `主力模型：${modelLabel}` : '';
     } else if (src) {
-      // 无用量时展示数据源状态，避免新机器上只看到全 0
       r.chips.hidden = true;
       if (src.status === 'missing') {
-        r.today.textContent = '目录不存在';
-        r.model.textContent = '未安装?';
+        r.today.textContent = '目录缺失';
       } else if (src.status === 'empty') {
         r.today.textContent = '暂无会话';
-        r.model.textContent = '待产生';
       } else if (src.status === 'error') {
         r.today.textContent = '读取失败';
-        r.model.textContent = '异常';
       } else {
-        r.today.textContent = '暂无计费事件';
+        r.today.textContent = '无数据';
       }
       r.today.title = `${src.message || ''}\n${src.hint || ''}\n${src.root || ''}`;
       r.card.title = `${src.label}\n${src.root}\n${src.message || ''}`;
     } else {
       r.chips.hidden = true;
-      r.today.textContent = '暂无数据';
+      r.today.textContent = '无数据';
     }
 
     // 变化动效：仅在非首帧且确有增长时触发，避免启动瞬间刷屏。
