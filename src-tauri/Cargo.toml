@@ -4,6 +4,7 @@ version = "1.5.8"
 description = "记录 Claude Code、Codex、Pi、Grok Build 的 token 与金钱消耗"
 authors = ["hkm"]
 edition = "2021"
+default-run = "token-record"
 
 [lib]
 name = "token_record_lib"
