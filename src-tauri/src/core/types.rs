@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-// ── Token 用量事件 ──
+// ── Token 用量事件（内部使用，不直接序列化给前端）──
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TokenEvent {
@@ -25,9 +25,10 @@ pub struct TokenEvent {
     pub timestamp: i64,
 }
 
-// ── 快照数据结构 ──
+// ── 快照数据结构（序列化给前端，全部 camelCase）──
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct ToolTokens {
     pub input: u64,
     pub output: u64,
@@ -37,6 +38,7 @@ pub struct ToolTokens {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ToolStats {
     pub tokens: ToolTokens,
     pub total: u64,
@@ -49,6 +51,7 @@ pub struct ToolStats {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct TodayStats {
     pub tokens: ToolTokens,
     pub total: u64,
@@ -57,6 +60,7 @@ pub struct TodayStats {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ModelStats {
     pub tokens: ToolTokens,
     pub total: u64,
@@ -67,6 +71,7 @@ pub struct ModelStats {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct GrandTotal {
     pub tokens: ToolTokens,
     pub total: u64,
@@ -75,6 +80,7 @@ pub struct GrandTotal {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct DayData {
     pub tokens: ToolTokens,
     pub total: u64,
@@ -85,6 +91,7 @@ pub struct DayData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct DaySummary {
     pub date: String,
     pub total: u64,
@@ -92,6 +99,7 @@ pub struct DaySummary {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct PeriodData {
     pub today_key: String,
     pub today: ToolTokens,
@@ -102,6 +110,7 @@ pub struct PeriodData {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SourceInfo {
     pub key: String,
     pub label: String,
@@ -115,6 +124,7 @@ pub struct SourceInfo {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
 pub struct SourcesResult {
     pub tools: HashMap<String, SourceInfo>,
     pub total_files: u64,
@@ -127,6 +137,7 @@ pub struct SourcesResult {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Snapshot {
     pub generated_at: i64,
     pub tools: HashMap<String, ToolStats>,
@@ -136,17 +147,35 @@ pub struct Snapshot {
     pub sources: SourcesResult,
 }
 
+// ── Delta（增量变化，用于前端动画）──
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct ToolDelta {
+    pub token_delta: u64,
+    pub cost_delta: f64,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct Delta {
+    pub tools: HashMap<String, ToolDelta>,
+    pub grand_token_delta: u64,
+    pub grand_cost_delta: f64,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SnapshotOutput {
     pub snapshot: Snapshot,
+    pub delta: Delta,
     pub is_first: bool,
-    pub has_delta: bool,
 }
 
 // ── 定价相关 ──
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct PricingEntry {
     pub model: String,
     pub input: f64,
@@ -172,6 +201,7 @@ pub struct PricingTable {
 // ── 偏好设置 ──
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Preferences {
     pub compact: bool,
     pub open_at_login: bool,

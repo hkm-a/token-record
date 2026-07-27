@@ -204,15 +204,3 @@ fn add_tokens_to_tool(target: &mut ToolTokens, source: &DayData) {
     target.cache_read += source.tokens.cache_read;
     target.total = target.total();
 }
-
-impl Default for ToolTokens {
-    fn default() -> Self {
-        Self {
-            input: 0,
-            output: 0,
-            cache_write: 0,
-            cache_read: 0,
-            total: 0,
-        }
-    }
-}

@@ -1,30 +1,16 @@
 // Prevents additional console window on Windows in release
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::sync::Mutex;
-use tauri::{AppHandle, Emitter, Manager, State};
+use tauri::{AppHandle, Emitter};
 use tauri_plugin_updater::UpdaterExt;
-use token_record_lib::core::types::{Preferences, Snapshot, SnapshotOutput};
-use token_record_lib::core::aggregator;
-use token_record_lib::core::collectors;
-use token_record_lib::core::sources;
+use token_record_lib::core::types::{Preferences, SnapshotOutput};
 use token_record_lib::config;
-
-// ── 应用状态 ──
-
-struct AppState {
-    last_snapshot: Mutex<Option<Snapshot>>,
-}
 
 // ── Tauri 命令 ──
 
 #[tauri::command]
-fn get_snapshot(state: State<'_, AppState>) -> SnapshotOutput {
-    let output = token_record_lib::refresh();
-    if let Ok(mut last) = state.last_snapshot.lock() {
-        *last = Some(output.snapshot.clone());
-    }
-    output
+fn get_snapshot() -> SnapshotOutput {
+    token_record_lib::refresh()
 }
 
 #[tauri::command]
@@ -84,6 +70,7 @@ async fn apply_update(app: AppHandle) -> Result<(), String> {
 fn setup_tray<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<(), Box<dyn std::error::Error>> {
     use tauri::menu::{Menu, MenuItem};
     use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+    use tauri::Manager;
 
     let show_i = MenuItem::with_id(app, "show", "显示/隐藏", true, None::<&str>)?;
     let refresh_i = MenuItem::with_id(app, "refresh", "刷新", true, None::<&str>)?;
@@ -146,9 +133,6 @@ fn main() {
     tauri::Builder::default()
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
-        .manage(AppState {
-            last_snapshot: Mutex::new(None),
-        })
         .setup(|app| {
             setup_tray(app.handle())?;
             Ok(())
