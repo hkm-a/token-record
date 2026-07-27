@@ -67,6 +67,8 @@
     "portable": {
       "artifactName": "TokenRecord-${version}-portable.${ext}"
     },
-    "asar": true
+    "asar": true,
+    "compression": "maximum",
+    "afterPack": "./build/afterPack.js"
   }
 }
