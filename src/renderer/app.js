@@ -188,8 +188,10 @@ function updateEmptyBanner(snapshot) {
 
 function updatePeriod(snapshot) {
   const period = snapshot.period || {};
-  const today = period.today || { total: 0, cost: 0 };
-  const last7 = period.last7 || { total: 0, cost: 0 };
+  const today = period.today || { total: 0 };
+  const last7 = period.last7 || { total: 0 };
+  const todayCost = period.todayCost || 0;
+  const last7Cost = period.last7Cost || 0;
 
   if (refs.grandTokensSub) {
     refs.grandTokensSub.textContent = `今日 ${formatCompact(today.total || 0)} · 7日 ${formatCompact(
@@ -197,8 +199,8 @@ function updatePeriod(snapshot) {
     )}`;
   }
   if (refs.grandCostSub) {
-    refs.grandCostSub.textContent = `今日 ${formatMoney(today.cost || 0)} · 7日 ${formatMoney(
-      last7.cost || 0
+    refs.grandCostSub.textContent = `今日 ${formatMoney(todayCost)} · 7日 ${formatMoney(
+      last7Cost
     )}`;
   }
 

@@ -1,11 +1,11 @@
 {
   "version": "1.6.1",
-  "notes": "代码审查修复 + 自动检查更新",
-  "pub_date": "2026-07-28T19:30:00Z",
+  "notes": "修复花费副行显示0 — todayCost/last7Cost 字段名修正",
+  "pub_date": "2026-07-28T20:00:00Z",
   "platforms": {
     "windows-x86_64": {
       "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.1/Token._1.6.1_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXN1Y2w1elBzcms4UVVMbEJtTzJGUVVmM1FLaGZ1OE9XYW43QldWV0FlWUVlL3ZnK3UzOW1BOEFLbzBaWHZDeERvVndzNnU2cnBvVFFMa0IydkpJNWdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MTg5MTI5CWZpbGU6VG9rZW7orrDlvZVfMS42LjFfeDY0LXNldHVwLmV4ZQpiSDduUVBUaHh6cDE1THNPbkh1a3o0VU1vOVBSZWQvcFdrZEMxcGkrdmgraStwaTQ3ME5BWDhJZWpmcHFNZ00wUWR2enZQaTh4dmNNdkY0Zk9zNE5DUT09Cg=="
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaW9PZ2s5S0s5c3AyVUpRT05haG04UTlKT2JqUURsaEJxclo5WWJhem9lcjZBODFiTnFURUkxeERsOHhwZklYSHJMV2kwZUpJUkVsdDJsN1hlVnUwT3d3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MTg5NjMzCWZpbGU6VG9rZW7orrDlvZVfMS42LjFfeDY0LXNldHVwLmV4ZQpHamZ2VlpMcGJTOWxMUDZKYTg1RnNEM1g4YkRLeXZHc2ZHUXUyR0RYV3V0VUN4a0pMSUxzS2JzQld0a25zK0VVdjN5Y0FJUEdLUEhPdGJ1WjZFS1NDUT09Cg=="
     }
   }
 }
