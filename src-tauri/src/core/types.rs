@@ -135,6 +135,7 @@ pub struct Snapshot {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct SnapshotOutput {
     pub snapshot: Snapshot,
     pub is_first: bool,
@@ -157,6 +158,7 @@ pub struct PricingEntry {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
+#[allow(dead_code)]
 pub struct PricingTable {
     pub entries: Vec<PricingEntry>,
     pub default_input: f64,

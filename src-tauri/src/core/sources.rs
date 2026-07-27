@@ -10,7 +10,6 @@ struct ProbeDef {
     hint: &'static str,
     how: &'static str,
     recursive: bool,
-    filename_filter: Option<&'static str>,
 }
 
 const PROBES: &[ProbeDef] = &[
@@ -21,7 +20,6 @@ const PROBES: &[ProbeDef] = &[
         hint: "~/.claude/projects/*/*.jsonl",
         how: "使用 Claude Code 产生会话后会出现用量",
         recursive: false,
-        filename_filter: None,
     },
     ProbeDef {
         key: "codex",
@@ -30,7 +28,6 @@ const PROBES: &[ProbeDef] = &[
         hint: "~/.codex/sessions/**/*.jsonl",
         how: "使用 Codex 产生会话后会出现用量",
         recursive: true,
-        filename_filter: None,
     },
     ProbeDef {
         key: "pi",
@@ -39,7 +36,6 @@ const PROBES: &[ProbeDef] = &[
         hint: "~/.pi/agent/sessions/**/*.jsonl",
         how: "使用 Pi 产生会话后会出现用量",
         recursive: true,
-        filename_filter: None,
     },
     ProbeDef {
         key: "grok",
@@ -48,7 +44,6 @@ const PROBES: &[ProbeDef] = &[
         hint: "~/.grok/sessions/**/updates.jsonl",
         how: "使用 Grok Build 产生会话后会出现用量",
         recursive: false,
-        filename_filter: Some("updates.jsonl"),
     },
 ];
 
@@ -57,8 +52,8 @@ pub fn probe_sources() -> SourcesResult {
     let mut total_files = 0u64;
     let mut missing = 0u64;
     let mut empty = 0u64;
-    let mut errors = 0u64;
-    let mut issues = Vec::new();
+    let errors = 0u64;
+    let issues: Vec<String> = Vec::new();
     let mut all_quiet = true;
 
     for probe in PROBES {

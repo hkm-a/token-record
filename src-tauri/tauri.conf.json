@@ -35,7 +35,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "msi",
+    "targets": "nsis",
     "windows": {
       "wix": null,
       "nsis": null

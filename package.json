@@ -12,7 +12,8 @@
     "pack": "electron-builder --win portable --config.electronDist=node_modules/electron/dist",
     "tauri": "npx @tauri-apps/cli@2.11.4",
     "tauri:build": "npx @tauri-apps/cli@2.11.4 build",
-    "dist": "npm run pack"
+    "dist": "npm run pack",
+    "dist:tauri": "npx @tauri-apps/cli@2.11.4 build"
   },
   "keywords": [
     "token",
@@ -75,6 +76,7 @@
     "afterPack": "./build/afterPack.js"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.11.1"
+    "@tauri-apps/api": "^2.11.1",
+    "@tauri-apps/cli-win32-x64-msvc": "^2.11.4"
   }
 }

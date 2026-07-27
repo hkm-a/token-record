@@ -1,4 +1,4 @@
-use super::types::{ModelStats, PricingEntry, ToolTokens};
+use super::types::PricingEntry;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 

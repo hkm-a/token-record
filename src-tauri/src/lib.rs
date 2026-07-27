@@ -7,7 +7,7 @@ use core::collectors;
 use core::sources;
 use core::aggregator;
 use std::sync::Mutex;
-use tauri::{AppHandle, Emitter, Manager, State};
+use tauri::{AppHandle, Emitter, State};
 use tauri_plugin_updater::UpdaterExt;
 /// 应用状态：缓存最新快照
 struct AppState {
