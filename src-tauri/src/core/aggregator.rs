@@ -151,7 +151,7 @@ fn build_period(
     today_key: &str,
 ) -> PeriodData {
     let mut last7_tokens = ToolTokens::default();
-
+    let mut last7_cost = 0.0;
     // 生成最近 7 天的键
     let today = chrono::Local::now().date_naive();
     let mut days = Vec::new();
@@ -161,6 +161,7 @@ fn build_period(
         let key = d.format("%Y-%m-%d").to_string();
         if let Some(day_data) = by_day.get(&key) {
             add_tokens_to_tool(&mut last7_tokens, day_data);
+            last7_cost += day_data.cost;
             days.push(DaySummary {
                 date: key.clone(),
                 total: day_data.total,
@@ -189,7 +190,9 @@ fn build_period(
     PeriodData {
         today_key: today_key.to_string(),
         today: today_tokens,
+        today_cost: today_data.cost,
         last7: last7_tokens,
+        last7_cost,
         days,
     }
 }

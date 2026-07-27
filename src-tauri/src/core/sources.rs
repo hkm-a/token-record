@@ -19,7 +19,7 @@ const PROBES: &[ProbeDef] = &[
         root: || home_dir().join(".claude").join("projects"),
         hint: "~/.claude/projects/*/*.jsonl",
         how: "使用 Claude Code 产生会话后会出现用量",
-        recursive: false,
+        recursive: true,
     },
     ProbeDef {
         key: "codex",
@@ -43,7 +43,7 @@ const PROBES: &[ProbeDef] = &[
         root: || home_dir().join(".grok").join("sessions"),
         hint: "~/.grok/sessions/**/updates.jsonl",
         how: "使用 Grok Build 产生会话后会出现用量",
-        recursive: false,
+        recursive: true,
     },
 ];
 

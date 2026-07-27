@@ -95,7 +95,9 @@ pub struct DaySummary {
 pub struct PeriodData {
     pub today_key: String,
     pub today: ToolTokens,
+    pub today_cost: f64,
     pub last7: ToolTokens,
+    pub last7_cost: f64,
     pub days: Vec<DaySummary>,
 }
 
