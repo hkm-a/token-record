@@ -25,16 +25,9 @@ fn save_prefs(prefs: Preferences) {
 
 #[tauri::command]
 fn get_version() -> String {
-    "1.6.0".to_string()
+    "1.6.1".to_string()
 }
 
-#[tauri::command]
-fn get_app_info() -> serde_json::Value {
-    serde_json::json!({
-        "version": "1.6.0",
-        "appId": "com.hkma.token-record",
-    })
-}
 
 #[tauri::command]
 fn quit_app(app: AppHandle) {
@@ -131,7 +124,6 @@ fn setup_tray<R: tauri::Runtime>(app: &AppHandle<R>) -> Result<(), Box<dyn std::
 
 fn main() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .setup(|app| {
             setup_tray(app.handle())?;
@@ -142,7 +134,6 @@ fn main() {
             get_prefs,
             save_prefs,
             get_version,
-            get_app_info,
             quit_app,
             check_update,
             apply_update,

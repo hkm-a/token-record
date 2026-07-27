@@ -53,7 +53,7 @@ fn compute_delta(prev: &Snapshot, curr: &Snapshot) -> Delta {
         let prev_token = prev.tools.get(key).map(|t| t.total).unwrap_or(0);
         let prev_cost = prev.tools.get(key).map(|t| t.cost).unwrap_or(0.0);
         let token_delta = curr_tool.total.saturating_sub(prev_token);
-        let cost_delta = curr_tool.cost - prev_cost;
+        let cost_delta = (curr_tool.cost - prev_cost).max(0.0);
 
         if token_delta > 0 || cost_delta.abs() > 0.001 {
             tools.insert(

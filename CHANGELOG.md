@@ -1,5 +1,28 @@
 # 变更记录
 
+## 1.6.1 — 2026-07-28
+
+### 安全与健壮性
+
+- **CSP 策略**：从 null（无限制）改为 restrictive CSP，限制 script/style/connect 来源
+- **权限收敛**：移除不必要的 `shell:allow-open` 权限，仅保留 `core:default` + `updater:default`
+- **panic 防护**：`home_dir()` unwrap 改为 fallback `.`
+- **panic 防护**：`pricing.rs` 解析 pricing.json 失败时返回默认定价而非 panic
+- **delta 安全**：`compute_delta` 中 `cost_delta` 用 `.max(0.0)` 防止负值
+
+### 代码清理
+
+- 移除未使用的 `tauri-plugin-shell` 依赖
+- 移除未使用的 `get_app_info` 命令
+- 移除 `refreshNow` 中 dispatch CustomEvent 的死代码
+- 移除根目录重复的 `latest.json`
+- `pricing.rs` 的 `get_entry` 改用 `match_model` 消除重复子串匹配逻辑
+
+### 测试
+
+- Rust 集成测试 15/15 通过
+- JS 核心测试 27/27 通过
+
 ## 1.6.0 — 2026-07-28
 
 ### 重构

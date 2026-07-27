@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 /// Home 目录辅助
 pub fn home_dir() -> PathBuf {
-    dirs::home_dir().unwrap_or_else(|| PathBuf::from("C:\\Users\\default"))
+    dirs::home_dir().unwrap_or_else(|| PathBuf::from("."))
 }
 
 /// 从时间戳（毫秒）生成本地日期键 YYYY-MM-DD
