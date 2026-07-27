@@ -25,7 +25,7 @@ const {
   shouldStartHidden,
   buildLoginItemSettings,
 } = require('./prefs');
-const { checkForUpdate, httpDownload } = require('./updater');
+const { checkForUpdate, downloadAndInstall } = require('./updater');
 
 const REFRESH_MS = 2000;
 // 展开高度仅作初值，随后按内容 fit 收紧，消除底部空白
@@ -331,45 +331,40 @@ async function runUpdateCheck(opts = {}) {
     }
 
     const latest = result.latest;
-    const detail = [
-      `当前：v${result.currentVersion}`,
-      `最新：v${result.latestVersion}`,
-      latest.assetName ? `安装包：${latest.assetName}` : '',
-      '',
-      '便携版需下载新 exe 后自行替换运行（无法覆盖正在运行的文件）。',
-    ]
-      .filter(Boolean)
-      .join('\n');
 
     const { response } = await dialog.showMessageBox({
       type: 'info',
       title: '发现新版本',
       message: `Token 记录 v${result.latestVersion} 可用`,
-      detail,
+      detail: [
+        `当前：v${result.currentVersion}  → 最新：v${result.latestVersion}`,
+        latest.assetName ? `安装包：${latest.assetName}` : '',
+      ]
+        .filter(Boolean)
+        .join('\n'),
       buttons: latest.downloadUrl
-        ? ['下载便携版', '打开发布页', '稍后']
+        ? ['下载并更新', '稍后']
         : ['打开发布页', '稍后'],
       defaultId: 0,
-      cancelId: latest.downloadUrl ? 2 : 1,
+      cancelId: latest.downloadUrl ? 1 : 1,
     });
 
     if (latest.downloadUrl && response === 0) {
-      const dest = path.join(
-        app.getPath('downloads'),
-        latest.assetName || `TokenRecord-${result.latestVersion}-portable.exe`
-      );
+      // 自动下载 → 替换 → 重启
       try {
-        await httpDownload(latest.downloadUrl, dest);
-        shell.showItemInFolder(dest);
-        dialog.showMessageBox({
+        // 静默下载新版本
+        await downloadAndInstall(latest);
+        // 下载完成，提示重启
+        await dialog.showMessageBox({
           type: 'info',
-          title: '下载完成',
-          message: '新版本已保存到「下载」文件夹',
-          detail: `${dest}\n\n请退出当前应用后运行新 exe。`,
+          title: '更新完成',
+          message: `Token 记录 v${result.latestVersion} 已就绪，即将自动重启。`,
           buttons: ['好的'],
         });
+        isQuitting = true;
+        app.quit();
       } catch (err) {
-        dialog.showErrorBox('下载失败', String(err && err.message ? err.message : err));
+        dialog.showErrorBox('更新失败', String(err && err.message ? err.message : err));
         if (latest.htmlUrl) shell.openExternal(latest.htmlUrl);
       }
     } else if (

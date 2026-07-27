@@ -1,11 +1,25 @@
 'use strict';
 
 // 自动更新（适配 portable 分发）：
-// 从 GitHub Releases 查询最新版，比较 semver；有新版时下载便携 exe 或打开发布页。
-// 不依赖 electron-updater 的 NSIS 差量（portable 无法原地静默替换进程文件）。
+// 从 GitHub Releases 查询最新版，比较 semver；有新版时自动下载新 exe，
+// 写入升级批处理脚本，自启批处理后退出，由批处理完成替换并重启。
+//
+// 便携 exe 无法原地覆盖运行中的文件，因此采用 批处理接力 方案：
+//   exe A (运行中)
+//     → 下载 exe B 到 temp
+//     → 写出 upgrade.bat
+//     → 静默启动 upgrade.bat
+//     → 进程退出
+//  upgrade.bat:
+//     loop 等待原进程消失
+//     copy /Y B → A（exe 路径）
+//     del B
+//     start A（带 --updated 参数）
+//     del self
 
 const fs = require('fs');
 const path = require('path');
+const { spawn } = require('child_process');
 const https = require('https');
 const http = require('http');
 
@@ -63,7 +77,7 @@ function parseReleasePayload(data) {
   };
 }
 
-// 使用 https/http 拉取 JSON（避免依赖全局 fetch 行为差异）。
+// 使用 https/http 拉取 JSON。
 function httpGetJson(url, opts = {}) {
   return new Promise((resolve, reject) => {
     const lib = url.startsWith('https') ? https : http;
@@ -107,6 +121,7 @@ function httpGetJson(url, opts = {}) {
   });
 }
 
+// 下载文件。
 function httpDownload(url, destPath, onProgress) {
   return new Promise((resolve, reject) => {
     const lib = url.startsWith('https') ? https : http;
@@ -168,6 +183,83 @@ async function checkForUpdate(currentVersion, opts = {}) {
   };
 }
 
+// ─── 自动下载并安装（便携 exe 接力） ─────────────────────────
+
+// 计算当前 exe 路径（app.isPackaged 时就是自身，dev 模式取 package.json 所在目录占位）
+function exePath() {
+  // 在便携包中 process.execPath 就是 .exe 自身
+  return process.execPath;
+}
+
+// 生成升级批处理脚本内容。
+// oldExe: 当前运行中的 exe 路径
+// newExe: 已下载到 temp 的新 exe 路径
+// 返回脚本字符串。
+function buildUpgradeBat(oldExe, newExe) {
+  const oldQuoted = JSON.stringify(oldExe);
+  const newQuoted = JSON.stringify(newExe);
+  return [
+    '@echo off',
+    'chcp 65001 >nul',
+    '',
+    `set "OLD=${oldExe}"`,
+    `set "NEW=${newExe}"`,
+    '',
+    'REM 等待原进程退出',
+    ':wait',
+    `tasklist /fi "PID eq %PPID%" 2>nul | findstr /i "%PPID%" >nul`,
+    'if errorlevel 1 goto copy',
+    'timeout /t 1 /nobreak >nul',
+    'goto wait',
+    '',
+    ':copy',
+    'REM 替换 exe',
+    'copy /Y "%NEW%" "%OLD%" >nul 2>&1',
+    'if errorlevel 1 (',
+    '  echo 替换失败 > "%TEMP%\\token-record-update-error.txt"',
+    '  exit /b 1',
+    ')',
+    '',
+    'REM 删除下载的临时文件',
+    'del "%NEW%" 2>nul',
+    '',
+    'REM 启动新版本',
+    'start "" "%OLD%" --updated',
+    '',
+    'REM 自毁',
+    'del "%~f0" 2>nul',
+  ].join('\r\n');
+}
+
+// 执行自动更新流程：
+// 1. 下载新 exe 到系统 temp 目录
+// 2. 写出 upgrade.bat
+// 3. 启动 bat（detached）
+// 4. 返回 { tempExe, batPath }，调用方应退出进程
+function downloadAndInstall(latest, onProgress) {
+  const tempDir = fs.mkdtempSync(path.join(require('os').tmpdir(), 'tokenrec-update-'));
+  const assetName = latest.assetName || `TokenRecord-${latest.version}-portable.exe`;
+  const tempExe = path.join(tempDir, assetName);
+  const batPath = path.join(tempDir, 'upgrade.bat');
+
+  return httpDownload(latest.downloadUrl, tempExe, onProgress).then(() => {
+    const old = exePath();
+    const batContent = buildUpgradeBat(old, tempExe);
+    fs.writeFileSync(batPath, batContent, 'utf8');
+
+    // 静默启动批处理（隐藏窗口）
+    const child = spawn(batPath, [], {
+      detached: true,
+      stdio: 'ignore',
+      shell: true,
+      windowsHide: true,
+    });
+    child.unref();
+
+    return { tempExe, batPath };
+  });
+}
+
 module.exports = {
   DEFAULT_REPO,
   DEFAULT_API,
@@ -178,4 +270,7 @@ module.exports = {
   fetchLatestRelease,
   checkForUpdate,
   httpDownload,
+  downloadAndInstall,
+  buildUpgradeBat,
+  exePath,
 };
