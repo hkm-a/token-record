@@ -10,6 +10,8 @@
     "icon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-icon.ps1 && node scripts/png2ico.js",
     "shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-shortcut.ps1",
     "pack": "electron-builder --win portable --config.electronDist=node_modules/electron/dist",
+    "tauri": "npx @tauri-apps/cli@2.11.4",
+    "tauri:build": "npx @tauri-apps/cli@2.11.4 build",
     "dist": "npm run pack"
   },
   "keywords": [
@@ -25,6 +27,7 @@
   "author": "hkm",
   "license": "MIT",
   "devDependencies": {
+    "@tauri-apps/cli": "^2.11.4",
     "electron": "^33.0.0",
     "electron-builder": "^25.1.8"
   },
@@ -70,5 +73,8 @@
     "asar": true,
     "compression": "maximum",
     "afterPack": "./build/afterPack.js"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.11.1"
   }
 }

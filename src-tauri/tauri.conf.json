@@ -1,0 +1,55 @@
+{
+  "$schema": "https://raw.githubusercontent.com/tauri-apps/tauri/dev/crates/tauri-config-schema/schema.json",
+  "productName": "Token记录",
+  "version": "1.5.8",
+  "identifier": "com.hkma.token-record",
+  "build": {
+    "frontendDist": "../src/renderer",
+    "devUrl": "http://localhost:1420",
+    "beforeDevCommand": "",
+    "beforeBuildCommand": ""
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Token记录",
+        "label": "main",
+        "width": 400,
+        "height": 300,
+        "resizable": true,
+        "decorations": false,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    },
+    "withGlobalTauri": true,
+    "trayIcon": {
+      "iconPath": "icons/icon.png",
+      "iconAsTemplate": true,
+      "tooltip": "Token记录"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "msi",
+    "windows": {
+      "wix": null,
+      "nsis": null
+    }
+  },
+  "plugins": {
+    "updater": {
+      "pubkey": "",
+      "endpoints": [
+        "https://api.github.com/repos/hkm-a/token-record/releases/latest"
+      ],
+      "windows": {
+        "installMode": "passive"
+      }
+    }
+  }
+}

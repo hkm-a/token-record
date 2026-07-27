@@ -1,0 +1,30 @@
+{
+  "_meta": {
+    "unit": "USD per 1,000,000 tokens",
+    "source": "基于 LiteLLM 与各厂商公开定价整理（知识截至 2026-01）。自定义/代理模型（如 gpt-5.6-terra）与付费 Grok 为估算值，可按需修改。Pi 模型为代理模型，为估算值。",
+    "updated": "2026-07-27",
+    "fields": "input=非缓存输入, output=输出(含推理), cacheWrite=缓存写入, cacheRead=缓存读取"
+  },
+  "models": {
+    "claude-opus-4":       { "input": 15,   "output": 75,  "cacheWrite": 18.75, "cacheRead": 1.5 },
+    "claude-sonnet-4":     { "input": 3,    "output": 15,  "cacheWrite": 3.75,  "cacheRead": 0.3 },
+    "claude-haiku-4":      { "input": 1,    "output": 5,   "cacheWrite": 1.25,  "cacheRead": 0.1 },
+    "claude-3-5-haiku":    { "input": 0.8,  "output": 4,   "cacheWrite": 1,     "cacheRead": 0.08 },
+    "claude-3-5-sonnet":   { "input": 3,    "output": 15,  "cacheWrite": 3.75,  "cacheRead": 0.3 },
+    "claude-3-opus":       { "input": 15,   "output": 75,  "cacheWrite": 18.75, "cacheRead": 1.5 },
+    "gpt-5":               { "input": 1.25, "output": 10,  "cacheWrite": 0, "cacheRead": 0.125, "estimated": true },
+    "gpt-4o":              { "input": 2.5,  "output": 10,  "cacheWrite": 0, "cacheRead": 1.25 },
+    "gpt-4.1":             { "input": 2,    "output": 8,   "cacheWrite": 0, "cacheRead": 0.5 },
+    "o3":                  { "input": 2,    "output": 8,   "cacheWrite": 0, "cacheRead": 0.5, "estimated": true },
+    "grok-4.5-build-free": { "input": 0,    "output": 0,   "cacheWrite": 0, "cacheRead": 0, "free": true },
+    "grok-4.5-build":      { "input": 3,    "output": 15,  "cacheWrite": 0, "cacheRead": 0.75, "estimated": true },
+    "grok-4":              { "input": 3,    "output": 15,  "cacheWrite": 0, "cacheRead": 0.75, "estimated": true },
+    "grok-3":              { "input": 3,    "output": 15,  "cacheWrite": 0, "cacheRead": 0.75, "estimated": true },
+    "glm-5.2":             { "input": 1,    "output": 5,   "cacheWrite": 0, "cacheRead": 0.1, "estimated": true },
+    "deepseek-v4-flash":   { "input": 0.15, "output": 0.6, "cacheWrite": 0, "cacheRead": 0.1, "estimated": true },
+    "deepseek-v4-flash-free": { "input": 0, "output": 0, "cacheWrite": 0, "cacheRead": 0, "free": true },
+    "mimo-v2.5":           { "input": 1,    "output": 5,   "cacheWrite": 0, "cacheRead": 0.1, "estimated": true },
+    "mimo-v2.5-free":      { "input": 0,    "output": 0,   "cacheWrite": 0, "cacheRead": 0, "free": true }
+  },
+  "default": { "input": 1, "output": 5, "cacheWrite": 1.25, "cacheRead": 0.1, "estimated": true }
+}

@@ -59,6 +59,17 @@
       </footer>
     </div>
 
+    <script>
+      // 非 Tauri 环境时提供空桩，使 app.js 能安全运行
+      if (typeof window.__TAURI__ === 'undefined') {
+        window.__TAURI__ = {
+          core: { invoke: () => Promise.reject(new Error('not in Tauri')) },
+          event: { listen: () => Promise.resolve(() => {}) },
+          window: { getCurrentWindow: () => ({ hide(){}, setAlwaysOnTop(){}, setSize(){} }) },
+        };
+      }
+    </script>
+    <script src="tauri-bridge.js"></script>
     <script src="animations.js"></script>
     <script src="sound.js"></script>
     <script src="app.js"></script>

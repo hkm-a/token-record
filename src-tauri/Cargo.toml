@@ -1,0 +1,25 @@
+[package]
+name = "token-record"
+version = "1.5.8"
+description = "记录 Claude Code、Codex、Pi、Grok Build 的 token 与金钱消耗"
+authors = ["hkm"]
+edition = "2021"
+
+[lib]
+name = "token_record_lib"
+crate-type = ["lib", "cdylib", "staticlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-shell = "2"
+tauri-plugin-updater = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+chrono = { version = "0.4", features = ["serde"] }
+reqwest = { version = "0.12", features = ["json"] }
+tokio = { version = "1", features = ["full"] }
+dirs = "6"
+csv = "1.3"
