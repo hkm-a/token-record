@@ -401,9 +401,9 @@ function rebuildTrayMenu() {
     { label: '显示 / 隐藏', click: () => toggleWindow() },
     { label: '立即刷新', click: () => tick() },
     { type: 'separator' },
-    { label: '导出 CSV…', click: () => exportCsvFromTray() },
-    { label: '打开价目覆盖文件', click: () => openPricingOverride() },
-    { label: '检查更新…', click: () => runUpdateCheck({ silent: false }) },
+    { label: '导出…', click: () => exportCsvFromTray() },
+    { label: '价目覆盖', click: () => openPricingOverride() },
+    { label: '检查更新', click: () => runUpdateCheck({ silent: false }) },
     {
       label: '开机自启',
       type: 'checkbox',
