@@ -22,6 +22,11 @@ const SOURCE_META = {
     hint: '~/.grok/sessions/**/updates.jsonl',
     how: '使用 Grok Build 产生会话后会出现用量',
   },
+  pi: {
+    label: 'Pi',
+    hint: '~/.pi/agent/sessions/**/*.jsonl',
+    how: '使用 Pi 产生会话后会出现用量',
+  },
 };
 
 // 探测单个源：missing | empty | ok | error
@@ -71,7 +76,7 @@ function probeOne(name, collector) {
   }
 }
 
-// collectors: { claude, codex, grok }
+// collectors: { claude, codex, grok, pi }
 function probeSources(collectors) {
   const tools = {};
   let missing = 0;
@@ -89,7 +94,7 @@ function probeSources(collectors) {
   }
 
   const names = Object.keys(tools);
-  const allQuiet = totalFiles === 0; // 三源都没有可解析文件
+  const allQuiet = totalFiles === 0; // 四源都没有可解析文件
   const lines = [];
   for (const name of names) {
     const t = tools[name];
@@ -101,7 +106,7 @@ function probeSources(collectors) {
   let banner = '';
   if (allQuiet) {
     banner =
-      '暂无用量数据。请确认已安装并使用过 Claude Code / Codex / Grok Build；会话目录见各卡片提示。';
+      '暂无用量数据。请确认已安装并使用过 Claude Code / Codex / Pi / Grok Build；会话目录见各卡片提示。';
   } else if (missing > 0 || errors > 0) {
     banner = `部分数据源不可用（缺失 ${missing} · 错误 ${errors}）。详见状态栏或 CLI。`;
   }

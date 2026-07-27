@@ -1,6 +1,6 @@
 'use strict';
 
-// 采集器单元测试：用临时 JSONL 文件覆盖三源解析的关键陷阱。
+// 采集器单元测试：用临时 JSONL 文件覆盖四源解析的关键陷阱。
 
 const test = require('node:test');
 const assert = require('node:assert');
@@ -11,6 +11,7 @@ const path = require('path');
 const claude = require('../src/collectors/claude');
 const codex = require('../src/collectors/codex');
 const grok = require('../src/collectors/grok');
+const pi = require('../src/collectors/pi');
 
 function tmpFile(name, lines) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tokenrec-'));
@@ -106,6 +107,87 @@ test('Codex：失败会话（无 token 事件）返回空', async () => {
   const evs = await codex.collectFile({ path: file });
   assert.strictEqual(evs.length, 0);
 });
+
+test('Codex：跨日 session 按本地日拆分，今日只计入当天轮次', async () => {
+  const file = tmpFile('rollout-cross.jsonl', [
+    { type: 'session_meta', timestamp: '2026-07-26T10:00:00Z', payload: { model: 'gpt-5.6-terra', session_id: 'csx' } },
+    {
+      type: 'event_msg',
+      timestamp: '2026-07-26T10:05:00Z',
+      payload: {
+        type: 'token_count',
+        info: {
+          total_token_usage: { input_tokens: 100, cached_input_tokens: 40, output_tokens: 10 },
+          last_token_usage: { input_tokens: 100, cached_input_tokens: 40, output_tokens: 10 },
+        },
+      },
+    },
+    {
+      type: 'event_msg',
+      timestamp: '2026-07-27T03:00:00Z',
+      payload: {
+        type: 'token_count',
+        info: {
+          total_token_usage: { input_tokens: 250, cached_input_tokens: 90, output_tokens: 25 },
+          last_token_usage: { input_tokens: 150, cached_input_tokens: 50, output_tokens: 15 },
+        },
+      },
+    },
+  ]);
+
+  const evs = await codex.collectFile({ path: file });
+  assert.strictEqual(evs.length, 2); // 两天 2 个事件
+  // 总量不变：input 250-90=160，output 25，cacheRead 90
+  const totalInput = evs.reduce((s, e) => s + e.input, 0);
+  const totalOutput = evs.reduce((s, e) => s + e.output, 0);
+  const totalCacheRead = evs.reduce((s, e) => s + e.cacheRead, 0);
+  assert.strictEqual(totalInput, 160);
+  assert.strictEqual(totalOutput, 25);
+  assert.strictEqual(totalCacheRead, 90);
+  // 去重键按天区分
+  assert.ok(evs[0].dedupeKey !== evs[1].dedupeKey);
+});
+
+test('Pi：解析 assistant 消息 usage，按消息生成事件与去重键', async () => {
+  const pi = require('../src/collectors/pi');
+  const file = tmpFile('pi-session.jsonl', [
+    { type: 'session', id: 'sess1', timestamp: '2026-07-27T11:00:00Z' },
+    {
+      type: 'message',
+      id: 'm1',
+      timestamp: '2026-07-27T11:05:00Z',
+      message: {
+        role: 'assistant',
+        model: 'GLM-5.2',
+        usage: { input: 100, output: 20, cacheRead: 50, cacheWrite: 0, totalTokens: 170 },
+      },
+    },
+    // toolResult 消息：无 usage，应跳过
+    {
+      type: 'message',
+      id: 'm2',
+      timestamp: '2026-07-27T11:05:01Z',
+      message: { role: 'toolResult', content: [] },
+    },
+    // usage 全 0：应跳过
+    {
+      type: 'message',
+      id: 'm3',
+      timestamp: '2026-07-27T11:05:02Z',
+      message: { role: 'assistant', model: 'GLM-5.2', usage: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 } },
+    },
+  ]);
+
+  const evs = await pi.collectFile({ path: file });
+  assert.strictEqual(evs.length, 1);
+  assert.strictEqual(evs[0].tool, 'pi');
+  assert.strictEqual(evs[0].model, 'GLM-5.2');
+  assert.strictEqual(evs[0].input, 100);
+  assert.strictEqual(evs[0].output, 20);
+  assert.strictEqual(evs[0].cacheRead, 50);
+  assert.strictEqual(evs[0].dedupeKey, 'pi:m1');
+});
+
 
 test('Grok：累加各轮 turn_completed，按模型分组并减出非缓存输入', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'tokenrec-'));

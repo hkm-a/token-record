@@ -5,6 +5,7 @@
 const TOOLS = [
   { key: 'claude', name: 'Claude Code', accent: '#D97757' },
   { key: 'codex', name: 'Codex', accent: '#10A37F' },
+  { key: 'pi', name: 'Pi', accent: '#5EBDCF' },
   { key: 'grok', name: 'Grok Build', accent: '#9B8CFF' },
 ];
 
@@ -183,7 +184,7 @@ function updateEmptyBanner(snapshot) {
     .filter((t) => t.status !== 'ok')
     .map((t) => `${t.label}:${t.status === 'missing' ? '无目录' : t.status === 'empty' ? '无会话' : '异常'}`)
     .join(' · ');
-  body.textContent = issues || sources.banner || '请先使用 Claude / Codex / Grok 产生本地会话';
+      body.textContent = issues || sources.banner || '请先使用 Claude / Codex / Pi / Grok 产生本地会话';
 }
 
 function updatePeriod(snapshot) {

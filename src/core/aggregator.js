@@ -1,6 +1,6 @@
 'use strict';
 
-// 聚合器：把三源的标准化用量事件合并、去重，按工具/模型/日汇总，并计价。
+// 聚合器：把四源的标准化用量事件合并、去重，按工具/模型/日汇总，并计价。
 // 输出结构供 UI 与 CLI 直接消费。
 
 const { costOfTokens } = require('../pricing/calculator');

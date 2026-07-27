@@ -1,5 +1,18 @@
 # 变更记录
 
+## 1.5.0 — 2026-07-27
+
+### 新增
+- **Pi 采集**：新增 `~/.pi/agent/sessions/**/*.jsonl` 数据源，支持 Pi 的 token 与缓存统计
+- Pi 卡片在 UI 中位列第三（Claude → Codex → Pi → Grok）
+- **Codex 按日拆分修复**：跨日 sessions 的 token 按事件实际发生日归因，修复今日 token 虚高问题
+- 定价新增 Pi 模型（GLM-5.2、deepseek-v4-flash、mimo-v2.5 等）
+
+### 变更
+- 升级 v1.4.5 → v1.5.0
+- README / CLI / 空态提示 四源同步
+- 四源采集器引用、状态检查、注释全面对齐
+
 ## 1.4.5 — 2026-07-24
 
 ### 折叠态

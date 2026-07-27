@@ -1,6 +1,6 @@
 # Token 记录 · Desktop Token & Cost Monitor
 
-本地优先的桌面悬浮窗：汇总 **Claude Code**、**Codex**、**Grok Build** 的 token 消耗与估算费用，数值变化带动效。无需账号、不上云。
+本地优先的桌面悬浮窗：汇总 **Claude Code**、**Codex**、**Pi**、**Grok Build** 的 token 消耗与估算费用，数值变化带动效。无需账号、不上云。
 
 ![成品预览](docs/preview.png)
 
@@ -8,7 +8,7 @@
 
 ![折叠态](docs/preview-compact.png)
 
-**当前版本：v1.4.5** · [Releases](https://github.com/hkm-a/token-record/releases/tag/v1.4.5)
+**当前版本：v1.5.0** · [Releases](https://github.com/hkm-a/token-record/releases/tag/v1.5.0)
 
 ---
 
@@ -16,7 +16,7 @@
 
 1. 从 [Releases](https://github.com/hkm-a/token-record/releases) 下载 `TokenRecord-*-portable.exe`
 2. 双击运行 → 右上角悬浮窗 + 托盘图标
-3. 若三源皆空：先用过对应 AI 编码工具产生本地会话后再看
+3. 若四源皆空：先用过对应 AI 编码工具产生本地会话后再看
 
 开发模式：
 
@@ -40,7 +40,7 @@ AI 编码工具的用量分散在各自本地会话里，难以横向比较。�
 
 | 能力 | 说明 |
 |------|------|
-| 三源采集 | Claude / Codex / Grok Build 本地 JSONL |
+| 四源采集 | Claude / Codex / Pi / Grok Build 本地 JSONL |
 | 分项计价 | 输入 / 输出 / 缓存写 / 缓存读；可覆盖单价 |
 | 今日 / 近 7 日 | 总览副行 + 7 日火花条；各工具卡右上角「今日」 |
 | 折叠迷你条 | 「▁」后只保留总 Tokens / 总花费两大数字 |
@@ -60,9 +60,10 @@ AI 编码工具的用量分散在各自本地会话里，难以横向比较。�
 |------|----------|------|
 | Claude Code | `~/.claude/projects/*/*.jsonl` | `message.usage` |
 | Codex | `~/.codex/sessions/**/*.jsonl` | `token_count` |
+| Pi | `~/.pi/agent/sessions/**/*.jsonl` | `message.usage` |
 | Grok Build | `~/.grok/sessions/**/updates.jsonl` | `turn_completed.usage` |
 
-可用环境变量覆盖根目录：`TOKENREC_CLAUDE_DIR` / `TOKENREC_CODEX_DIR` / `TOKENREC_GROK_DIR`。
+可用环境变量覆盖根目录：`TOKENREC_CLAUDE_DIR` / `TOKENREC_CODEX_DIR` / `TOKENREC_PI_DIR` / `TOKENREC_GROK_DIR`。
 
 **只读**：从不修改或上传会话文件；计算全在本地。
 
@@ -125,7 +126,7 @@ npm run cli -- --csv .cache/export.csv
 
 - 云同步、账号登录、多设备
 - 手机端 / 浏览器扩展
-- 第 4 家工具采集（Cursor 等留待后续版本评估）
+- 更多工具采集（Cursor 等留待后续版本评估）
 - 官方账单 API 对账（仅本地会话估算）
 - 团队协作、分享、后台服务
 
@@ -149,7 +150,7 @@ npm run cli
 ```
 src/
 ├── shared/       # 路径、JSONL、文件遍历
-├── collectors/   # claude / codex / grok
+├── collectors/   # claude / codex / pi / grok
 ├── pricing/      # pricing.json + calculator
 ├── core/         # aggregator / store / sources
 ├── cli.js

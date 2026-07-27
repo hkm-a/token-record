@@ -1,6 +1,6 @@
 'use strict';
 
-// CLI 校验工具：不启动 UI，直接打印三源聚合结果。
+// CLI 校验工具：不启动 UI，直接打印四源聚合结果。
 // 用途：本地验证采集与计价是否正确；支持导出按日 CSV。
 // 运行：
 //   npm run cli
@@ -16,6 +16,7 @@ const money = (n) => '$' + n.toFixed(n < 1 ? 4 : 2);
 const TOOL_LABEL = {
   claude: 'Claude Code',
   codex: 'Codex',
+  pi: 'Pi',
   grok: 'Grok Build',
 };
 
@@ -78,7 +79,7 @@ async function main() {
   const toolNames = Object.keys(snapshot.tools);
   if (toolNames.length === 0) {
     console.log('  暂无任何用量数据。');
-    console.log('  请先使用 Claude Code / Codex / Grok Build 产生本地会话后再刷新。');
+    console.log('  请先使用 Claude Code / Codex / Pi / Grok Build 产生本地会话后再刷新。');
   }
 
   for (const name of toolNames) {

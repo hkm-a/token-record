@@ -1,6 +1,6 @@
 'use strict';
 
-// 快照存储：组装三个采集器，做“按文件增量缓存”，产出聚合快照并与上一帧比较得到增量。
+// 快照存储：组装四个采集器，做“按文件增量缓存”，产出聚合快照并与上一帧比较得到增量。
 // 设计意图：
 //  - 实时刷新时，未变化的会话文件（mtime+size 未变）直接复用上次解析结果，避免全量重解析；
 //  - 保留上一帧快照以计算 delta，供 UI 触发“数值变化动画/增量气泡”；
@@ -13,11 +13,12 @@ const fs = require('fs');
 const claude = require('../collectors/claude');
 const codex = require('../collectors/codex');
 const grok = require('../collectors/grok');
+const pi = require('../collectors/pi');
 const { aggregate } = require('./aggregator');
 const { loadTable } = require('../pricing/calculator');
 const { probeSources } = require('./sources');
 
-const COLLECTORS = { claude, codex, grok };
+const COLLECTORS = { claude, codex, pi, grok };
 
 // 比较相邻两帧快照，得到每个工具与总量的 token/花费增量。
 function diffSnapshots(prev, next) {
