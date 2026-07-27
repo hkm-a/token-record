@@ -63,12 +63,13 @@
 
     fitContent: () => {
       // 测量实际内容高度并调整窗口（Tauri v2 setSize）
-      requestAnimationFrame(() => {
+      // 用 setTimeout 等待卡片渲染完成后再测量
+      setTimeout(() => {
         const h = document.body.scrollHeight;
         if (h > 100) {
-          appWindow.setSize({ width: 420, height: Math.min(h + 4, 640) }).catch(() => {});
+          appWindow.setSize({ width: 420, height: h + 8 }).catch(() => {});
         }
-      });
+      }, 50);
     },
 
     getVersion: () => invoke('get_version'),
