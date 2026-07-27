@@ -26,8 +26,8 @@ fn get_pricing() -> &'static Pricing {
                     model: key.clone(),
                     input: e.get("input").and_then(|v| v.as_f64()).unwrap_or(15.0),
                     output: e.get("output").and_then(|v| v.as_f64()).unwrap_or(75.0),
-                    cache_write: e.get("cache_write").and_then(|v| v.as_f64()).unwrap_or(15.0),
-                    cache_read: e.get("cache_read").and_then(|v| v.as_f64()).unwrap_or(7.5),
+                    cache_write: e.get("cacheWrite").and_then(|v| v.as_f64()).unwrap_or(15.0),
+                    cache_read: e.get("cacheRead").and_then(|v| v.as_f64()).unwrap_or(7.5),
                     free: e.get("free").and_then(|v| v.as_bool()).unwrap_or(false),
                 },
             );
@@ -39,8 +39,8 @@ fn get_pricing() -> &'static Pricing {
                 model: "default".to_string(),
                 input: d.get("input").and_then(|v| v.as_f64()).unwrap_or(15.0),
                 output: d.get("output").and_then(|v| v.as_f64()).unwrap_or(75.0),
-                cache_write: d.get("cache_write").and_then(|v| v.as_f64()).unwrap_or(15.0),
-                cache_read: d.get("cache_read").and_then(|v| v.as_f64()).unwrap_or(7.5),
+                cache_write: d.get("cacheWrite").and_then(|v| v.as_f64()).unwrap_or(15.0),
+                cache_read: d.get("cacheRead").and_then(|v| v.as_f64()).unwrap_or(7.5),
                 free: false,
             },
         }

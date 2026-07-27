@@ -1,4 +1,4 @@
-mod core;
+pub mod core;
 mod config;
 mod tray;
 
