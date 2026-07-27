@@ -320,8 +320,7 @@ window.api.onUpdateProgress((data) => {
 
 versionEl.addEventListener('click', () => {
   if (updateState === 'ready') {
-    // 更新已下载，重启
-    if (window.api.startUpdate) window.api.startUpdate();
+    if (window.api.applyUpdate) window.api.applyUpdate();
     return;
   }
   if (!updateInfo || updateState !== 'idle' && updateState !== 'available') return;

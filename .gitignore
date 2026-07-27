@@ -9,6 +9,9 @@ snapshot.json
 # 操作系统
 Thumbs.db
 .DS_Store
+nul
+NUL
+NUL.*
 
 # 构建产物
 dist/

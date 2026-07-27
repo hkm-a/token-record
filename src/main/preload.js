@@ -13,8 +13,6 @@ contextBridge.exposeInMainWorld('api', {
   },
   onUpdateAvailable: (callback) => {
     ipcRenderer.on('update-available', (_event, data) => callback(data));
-  onUpdateAvailable: (callback) => {
-    ipcRenderer.on('update-available', (_event, data) => callback(data));
   },
   onUpdateProgress: (callback) => {
     ipcRenderer.on('update-download-progress', (_event, data) => callback(data));
@@ -30,3 +28,6 @@ contextBridge.exposeInMainWorld('api', {
   getVersion: () => ipcRenderer.invoke('get-version'),
   getPrefs: () => ipcRenderer.invoke('get-prefs'),
   startUpdate: () => ipcRenderer.send('start-update'),
+  // 更新已下载完成，直接重启（不再检查版本）
+  applyUpdate: () => ipcRenderer.send('apply-update'),
+});

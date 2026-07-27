@@ -569,6 +569,12 @@ function bootstrap() {
         dialog.showErrorBox('更新失败', String(err && err.message ? err.message : err));
       }
     });
+    // 已下载更新后立即重启（批处理脚本在等待主进程退出）
+    ipcMain.on('apply-update', () => {
+      isQuitting = true;
+      app.quit();
+    });
+    ipcMain.on('refresh-now', () => tick());
     ipcMain.on('toggle-pin', (_e, pinned) => {
       if (win) win.setAlwaysOnTop(!!pinned, 'screen-saver');
     });
