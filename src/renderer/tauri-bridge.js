@@ -66,8 +66,13 @@
     setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.5.8', open_at_login: false } }); },
 
     fitContent: () => {
-      const h = document.documentElement.scrollHeight;
-      appWindow.setSize({ width: 400, height: Math.min(h + 20, 600) });
+      // 测量实际内容高度并调整窗口（Tauri v2 setSize）
+      requestAnimationFrame(() => {
+        const h = document.body.scrollHeight;
+        if (h > 0) {
+          appWindow.setSize({ width: 420, height: Math.min(h + 8, 600) });
+        }
+      });
     },
 
     getVersion: () => invoke('get_version'),
