@@ -289,6 +289,11 @@ buildCards();
 bindControls();
 window.api.onSnapshot(handleData);
 
+// 启动后 5 秒自动检查更新
+setTimeout(() => {
+  if (window.api && window.api.startUpdate) window.api.startUpdate();
+}, 5000);
+
 // ─── 更新指示器 ─────────────────────────────────
 
 let updateInfo = null;

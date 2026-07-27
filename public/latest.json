@@ -1,11 +1,11 @@
 {
   "version": "1.6.1",
-  "notes": "代码审查修复：CSP 安全策略、移除不必要权限、panic 防护、死代码清理",
-  "pub_date": "2026-07-28T18:30:00Z",
+  "notes": "代码审查修复 + 自动检查更新",
+  "pub_date": "2026-07-28T19:30:00Z",
   "platforms": {
     "windows-x86_64": {
       "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.1/Token._1.6.1_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaW9SbUsrTkFqVVE4dEM5K3R2RkFFT0dkejF0TGp3WHNTYWYycUVnZnR3d05acEFlSnFUWU9HWVRhSS9NRGlSQnJ3SXNzcmdORmJGN2RGc3V6a285TmdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MTg4MTAxCWZpbGU6VG9rZW7orrDlvZVfMS42LjFfeDY0LXNldHVwLmV4ZQovSFF6VUpjdCs5dlZJdThDU2pUdkdYL0dHcDVwRDNyeDMzRTI3WDF5aDBvRnpsR2k1YVlRUkt5VW9WTWdQcjNZYy93TisxZkMwNmdzaGZXK0V6SDZBZz09Cg=="
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXN1Y2w1elBzcms4UVVMbEJtTzJGUVVmM1FLaGZ1OE9XYW43QldWV0FlWUVlL3ZnK3UzOW1BOEFLbzBaWHZDeERvVndzNnU2cnBvVFFMa0IydkpJNWdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MTg5MTI5CWZpbGU6VG9rZW7orrDlvZVfMS42LjFfeDY0LXNldHVwLmV4ZQpiSDduUVBUaHh6cDE1THNPbkh1a3o0VU1vOVBSZWQvcFdrZEMxcGkrdmgraStwaTQ3ME5BWDhJZWpmcHFNZ00wUWR2enZQaTh4dmNNdkY0Zk9zNE5DUT09Cg=="
     }
   }
 }
