@@ -391,26 +391,20 @@ function rebuildTrayMenu() {
   if (!tray || tray.isDestroyed()) return;
   const openLogin = isOpenAtLoginEnabled();
   const menu = Menu.buildFromTemplate([
-    { label: '显示 / 隐藏', click: () => toggleWindow() },
-    { label: '立即刷新', click: () => tick() },
+    { label: '显/隐', click: () => toggleWindow() },
+    { label: '刷新', click: () => tick() },
     { type: 'separator' },
-    { label: '导出…', click: () => exportCsvFromTray() },
-    { label: '价目覆盖', click: () => openPricingOverride() },
-    { label: '检查更新', click: () => runUpdateCheck({ silent: false }) },
+    { label: '导出', click: () => exportCsvFromTray() },
+    { label: '定价', click: () => openPricingOverride() },
+    { label: '更新', click: () => runUpdateCheck({ silent: false }) },
     {
-      label: '开机自启',
+      label: '自启',
       type: 'checkbox',
       checked: openLogin,
       click: (item) => setOpenAtLogin(item.checked),
     },
     { type: 'separator' },
-    {
-      label: '退出',
-      click: () => {
-        isQuitting = true;
-        app.quit();
-      },
-    },
+    { label: '退出', click: () => { isQuitting = true; app.quit(); } },
   ]);
   tray.setContextMenu(menu);
 }
