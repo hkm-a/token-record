@@ -117,5 +117,5 @@ async function main() {
 
 main().catch((err) => {
   console.error('运行失败：', err);
-  process.exit(1);
+  process.exitCode = 1;
 });

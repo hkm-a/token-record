@@ -17,7 +17,8 @@ const pi = require('../collectors/pi');
 const { aggregate } = require('./aggregator');
 const { loadTable } = require('../pricing/calculator');
 const { probeSources } = require('./sources');
-
+const { mergeDailyHistory } = require('./history');
+const { byDayToCsv } = require('./csv');
 const COLLECTORS = { claude, codex, pi, grok };
 
 // 比较相邻两帧快照，得到每个工具与总量的 token/花费增量。
@@ -40,45 +41,6 @@ function diffSnapshots(prev, next) {
   return d;
 }
 
-// 将 byDay 合并进历史文件；只保留最近 keepDays 天。
-function mergeDailyHistory(existing, byDay, generatedAt, keepDays = 90) {
-  const hist = existing && typeof existing === 'object' ? { ...existing } : {};
-  for (const [date, day] of Object.entries(byDay || {})) {
-    hist[date] = {
-      total: day.total,
-      cost: day.cost,
-      tokens: day.tokens,
-      tools: day.tools,
-      updatedAt: generatedAt,
-    };
-  }
-  const keys = Object.keys(hist).sort();
-  if (keys.length > keepDays) {
-    const drop = keys.slice(0, keys.length - keepDays);
-    for (const k of drop) delete hist[k];
-  }
-  return hist;
-}
-
-// 把 byDay 打成 CSV 文本（date,tool,tokens,cost）。
-function byDayToCsv(byDay) {
-  const lines = ['date,tool,tokens,cost'];
-  const dates = Object.keys(byDay || {}).sort();
-  for (const date of dates) {
-    const day = byDay[date];
-    const tools = day.tools || {};
-    const names = Object.keys(tools).sort();
-    if (names.length === 0) {
-      lines.push(`${date},all,${day.total || 0},${(day.cost || 0).toFixed(6)}`);
-      continue;
-    }
-    for (const name of names) {
-      const t = tools[name];
-      lines.push(`${date},${name},${t.total || 0},${(t.cost || 0).toFixed(6)}`);
-    }
-  }
-  return lines.join('\n') + '\n';
-}
 
 class Store {
   constructor(opts = {}) {
@@ -92,9 +54,12 @@ class Store {
   }
 
   // 增量收集全部事件：命中缓存则复用，否则重新解析该文件。
+  // 采集器间相互独立，用 Promise.all 并行 I/O；用批次控制并发防止瞬间过多文件。
   async computeEvents() {
     const all = [];
     const alive = new Set();
+    const tasks = [];
+
     for (const collector of Object.values(COLLECTORS)) {
       let files = [];
       try {
@@ -104,19 +69,32 @@ class Store {
       }
       for (const f of files) {
         alive.add(f.path);
-        const cached = this.fileCache.get(f.path);
-        let events;
-        if (cached && cached.mtimeMs === f.mtimeMs && cached.size === f.size) {
-          events = cached.events;
-        } else {
-          events = await collector.collectFile(f);
-          this.fileCache.set(f.path, { mtimeMs: f.mtimeMs, size: f.size, events });
-        }
-        for (const e of events) {
-          all.push(e);
-        }
+        tasks.push({ file: f, collector });
       }
     }
+
+    // 按批次并行处理，避免同时打开太多文件描述符
+    const BATCH = 20;
+    for (let i = 0; i < tasks.length; i += BATCH) {
+      const batch = tasks.slice(i, i + BATCH);
+      const results = await Promise.all(
+        batch.map(async ({ file: f, collector }) => {
+          const cached = this.fileCache.get(f.path);
+          if (cached && cached.mtimeMs === f.mtimeMs && cached.size === f.size) {
+            return cached.events;
+          }
+          const events = await collector.collectFile(f);
+          this.fileCache.set(f.path, { mtimeMs: f.mtimeMs, size: f.size, events });
+          // 限制缓存大小，防止长期使用内存膨胀
+          this._trimCache();
+          return events;
+        })
+      );
+      for (const events of results) {
+        for (const e of events) all.push(e);
+      }
+    }
+
     // 清理已删除文件的缓存，避免内存泄漏与幽灵数据。
     for (const key of [...this.fileCache.keys()]) {
       if (!alive.has(key)) {
@@ -124,6 +102,15 @@ class Store {
       }
     }
     return all;
+  }
+
+  // 限制 fileCache 最大条目数，淘汰最早写入的缓存
+  _trimCache() {
+    const MAX = 500;
+    if (this.fileCache.size <= MAX) return;
+    const keys = [...this.fileCache.keys()];
+    const drop = keys.slice(0, this.fileCache.size - MAX);
+    for (const k of drop) this.fileCache.delete(k);
   }
 
   // 刷新一帧：返回 { snapshot, delta, isFirst }。
@@ -139,29 +126,29 @@ class Store {
     return { snapshot, delta, isFirst };
   }
 
-  // 读取持久化的上一帧（用于启动时平滑过渡）。
   loadPersisted() {
     try {
       const s = JSON.parse(fs.readFileSync(this.snapshotFile, 'utf8'));
       this.last = s;
       return s;
-    } catch (_err) {
+    } catch (err) {
+      if (err.code !== 'ENOENT') {
+        console.warn('[token-record] 读取持久化快照失败：', err.message);
+      }
       return null;
     }
   }
 
-  // 持久化当前帧，并合并写入按日历史。
   persist(snapshot) {
     try {
       fs.mkdirSync(path.dirname(this.snapshotFile), { recursive: true });
       fs.writeFileSync(this.snapshotFile, JSON.stringify(snapshot));
-    } catch (_err) {
-      // 持久化失败不影响主流程
+    } catch (err) {
+      console.warn('[token-record] 持久化快照失败：', err.message);
     }
     this.persistDaily(snapshot);
   }
 
-  // 合并 byDay 到 daily.json。
   persistDaily(snapshot) {
     if (!snapshot || !snapshot.byDay) return null;
     try {
@@ -169,6 +156,7 @@ class Store {
       try {
         existing = JSON.parse(fs.readFileSync(this.dailyFile, 'utf8'));
       } catch (_err) {
+        // daily.json 尚不存在或损坏：重新开始
         existing = {};
       }
       const hist = mergeDailyHistory(
@@ -180,7 +168,8 @@ class Store {
       fs.mkdirSync(path.dirname(this.dailyFile), { recursive: true });
       fs.writeFileSync(this.dailyFile, JSON.stringify(hist, null, 2));
       return hist;
-    } catch (_err) {
+    } catch (err) {
+      console.warn('[token-record] 持久化 daily.json 失败：', err.message);
       return null;
     }
   }

@@ -58,8 +58,10 @@ function loadTable(file, opts = {}) {
     const raw = fs.readFileSync(overrideFile, 'utf8');
     const ov = JSON.parse(raw);
     return mergeTables(base, ov);
-  } catch (_err) {
-    // 无覆盖文件时静默使用主表
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.warn('[token-record] 读取价目覆盖文件失败：', err.message);
+    }
     return base;
   }
 }

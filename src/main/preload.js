@@ -13,6 +13,11 @@ contextBridge.exposeInMainWorld('api', {
   },
   onUpdateAvailable: (callback) => {
     ipcRenderer.on('update-available', (_event, data) => callback(data));
+  onUpdateAvailable: (callback) => {
+    ipcRenderer.on('update-available', (_event, data) => callback(data));
+  },
+  onUpdateProgress: (callback) => {
+    ipcRenderer.on('update-download-progress', (_event, data) => callback(data));
   },
   // 关闭按钮：隐藏到托盘（真正退出走托盘菜单）
   hide: () => ipcRenderer.send('hide-window'),
@@ -25,4 +30,3 @@ contextBridge.exposeInMainWorld('api', {
   getVersion: () => ipcRenderer.invoke('get-version'),
   getPrefs: () => ipcRenderer.invoke('get-prefs'),
   startUpdate: () => ipcRenderer.send('start-update'),
-});

@@ -488,7 +488,7 @@ function bootstrap() {
           }
           isQuitting = true;
           app.quit();
-        }, 2600);
+        }, 2600); // 等待 UI 渲染与动画完成后再截图（含折叠态展开动画）
       });
     }
 
@@ -497,24 +497,76 @@ function bootstrap() {
       isQuitting = true;
       app.quit();
     });
+    // 用户从 UI 点了版本号 → 确认 → 下载（带进度）→ 重启
     ipcMain.on('start-update', async () => {
-      // 用户从 UI 点了版本号 → 静默下载并重启
       try {
         const { checkForUpdate, downloadAndInstall } = require('./updater');
         const result = await checkForUpdate(APP_VERSION);
-        if (!result || !result.updateAvailable) return;
-        await downloadAndInstall(result.latest);
-        dialog.showMessageBox({
+        if (!result || !result.updateAvailable || !result.latest) return;
+
+        const latest = result.latest;
+        const { response } = await dialog.showMessageBox({
           type: 'info',
-          title: '更新完成',
-          message: `Token 记录 v${result.latestVersion} 已就绪，即将重启。`,
-          buttons: ['好的'],
-        }).then(() => {
-          isQuitting = true;
-          app.quit();
+          title: '发现新版本',
+          message: `Token 记录 v${result.latestVersion} 可用`,
+          detail: [
+            `当前：v${result.currentVersion}  → 最新：v${result.latestVersion}`,
+            latest.assetName ? `安装包：${latest.assetName}` : '',
+            latest.size ? `大小：${(latest.size / 1048576).toFixed(1)} MB` : '',
+          ]
+            .filter(Boolean)
+            .join('\n'),
+          buttons: ['下载并更新', '稍后'],
+          defaultId: 0,
+          cancelId: 1,
         });
+        if (response !== 0) return;
+
+        // 通知渲染层下载开始
+        if (win && !win.isDestroyed()) {
+          win.webContents.send('update-download-progress', {
+            status: 'downloading',
+            percent: 0,
+            latestVersion: result.latestVersion,
+          });
+        }
+
+        await downloadAndInstall(latest, (ratio) => {
+          const pct = Math.min(Math.round(ratio * 100), 99);
+          if (win && !win.isDestroyed()) {
+            win.webContents.send('update-download-progress', {
+              status: 'downloading',
+              percent: pct,
+              latestVersion: result.latestVersion,
+            });
+          }
+        });
+
+        // 下载完成，通知渲染层
+        if (win && !win.isDestroyed()) {
+          win.webContents.send('update-download-progress', {
+            status: 'ready',
+            percent: 100,
+            latestVersion: result.latestVersion,
+          });
+        }
+
+        const { response: r2 } = await dialog.showMessageBox({
+          type: 'info',
+          title: '更新就绪',
+          message: `Token 记录 v${result.latestVersion} 已下载完成。`,
+          detail: '重启应用以完成更新。',
+          buttons: ['立即重启', '稍后'],
+          defaultId: 0,
+          cancelId: 1,
+        });
+        if (r2 !== 0) return;
+
+        isQuitting = true;
+        app.quit();
       } catch (err) {
         console.error('自动更新失败：', err);
+        dialog.showErrorBox('更新失败', String(err && err.message ? err.message : err));
       }
     });
     ipcMain.on('toggle-pin', (_e, pinned) => {
@@ -526,6 +578,7 @@ function bootstrap() {
     ipcMain.on('fit-content', () => {
       fitWindowToContent();
     });
+    ipcMain.on('refresh-now', () => tick());
     ipcMain.handle('get-version', () => APP_VERSION);
     ipcMain.handle('get-prefs', () => ({
       openAtLogin: isOpenAtLoginEnabled(),

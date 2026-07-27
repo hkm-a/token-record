@@ -156,8 +156,7 @@ function handleData(payload) {
   else if (snapshot.sources && snapshot.sources.errors > 0) notes.push('源异常');
   refs.estimateNote.textContent = notes.join(' · ');
 
-  if (anyIncrease && !muted) playCashRegister();
-
+  if (anyIncrease && !muted && document.visibilityState !== 'hidden') playCashRegister();
   // 内容高度可能变化：下一帧请求主进程收紧窗口
   requestAnimationFrame(() => {
     if (window.api && window.api.fitContent) window.api.fitContent();
@@ -293,18 +292,42 @@ window.api.onSnapshot(handleData);
 // ─── 更新指示器 ─────────────────────────────────
 
 let updateInfo = null;
+let updateState = 'idle'; // idle | available | downloading | ready
 const versionEl = document.getElementById('appVersion');
 
 window.api.onUpdateAvailable((info) => {
   updateInfo = info;
-  versionEl.classList.add('has-update');
-  versionEl.title = `点击更新至 v${info.latestVersion}`;
-  if (window.api.fitContent) window.api.fitContent();
+  if (updateState === 'idle') {
+    versionEl.classList.add('has-update');
+    versionEl.title = `点击更新至 v${info.latestVersion}`;
+    if (window.api.fitContent) window.api.fitContent();
+  }
+});
+
+window.api.onUpdateProgress((data) => {
+  if (data.status === 'downloading') {
+    updateState = 'downloading';
+    versionEl.classList.remove('has-update');
+    versionEl.textContent = data.percent > 0 ? `${data.percent}%` : '↓';
+    versionEl.title = `正在下载 v${data.latestVersion}…`;
+  } else if (data.status === 'ready') {
+    updateState = 'ready';
+    versionEl.textContent = '↻重启';
+    versionEl.title = `v${data.latestVersion} 已就绪，点击重启`;
+    versionEl.classList.add('has-update');
+  }
 });
 
 versionEl.addEventListener('click', () => {
-  if (!updateInfo) return;
+  if (updateState === 'ready') {
+    // 更新已下载，重启
+    if (window.api.startUpdate) window.api.startUpdate();
+    return;
+  }
+  if (!updateInfo || updateState !== 'idle' && updateState !== 'available') return;
+  // 标记已处理，防止重复点击
+  updateState = 'available';
   versionEl.classList.remove('has-update');
-  versionEl.title = '更新中…';
+  versionEl.title = '检查中…';
   if (window.api.startUpdate) window.api.startUpdate();
 });

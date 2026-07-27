@@ -15,7 +15,7 @@ const path = require('path');
 const { readJsonl } = require('../shared/jsonl');
 const { listFiles } = require('../shared/files');
 const { rootOf } = require('../shared/paths');
-
+const { localDayKey } = require('../shared/date');
 // 从 total/last 结构安全读取字段（兼容不同字段命名）。
 function readUsage(u) {
   return {
@@ -116,14 +116,6 @@ async function collectFile(fileMeta) {
   return events;
 }
 
-// 本地时区日期键 YYYY-MM-DD（与 aggregator.localDayKey 保持一致）。
-function localDayKey(ts) {
-  const d = new Date(ts);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
 
 function listSourceFiles() {
   return listFiles(rootOf('codex'), '.jsonl');

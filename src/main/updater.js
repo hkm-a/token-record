@@ -4,6 +4,10 @@
 // 从 GitHub Releases 查询最新版，比较 semver；有新版时自动下载新 exe，
 // 写入升级批处理脚本，自启批处理后退出，由批处理完成替换并重启。
 //
+// 版本匹配策略：
+//   - 只匹配严格 semver 标签（vMAJOR.MINOR.PATCH），跳过含额外后缀的标签
+//   - 列出所有 release，按版本号降序选取高于当前版本的最新一个
+//
 // 便携 exe 无法原地覆盖运行中的文件，因此采用 批处理接力 方案：
 //   exe A (运行中)
 //     → 下载 exe B 到 temp
@@ -24,7 +28,9 @@ const https = require('https');
 const http = require('http');
 
 const DEFAULT_REPO = 'hkm-a/token-record';
-const DEFAULT_API = `https://api.github.com/repos/${DEFAULT_REPO}/releases/latest`;
+const DEFAULT_API_LIST = `https://api.github.com/repos/${DEFAULT_REPO}/releases?per_page=20`;
+// 严格 semver 正则：vMAJOR.MINOR.PATCH，不允许额外后缀
+const STRICT_SEMVER_RE = /^v?(\d+)\.(\d+)\.(\d+)$/;
 
 function normalizeVersion(v) {
   return String(v || '')
@@ -52,6 +58,11 @@ function compareSemver(a, b) {
   return 0;
 }
 
+// 检查 tag 是否为严格 semver 格式（如 v1.5.8 或 1.5.8），不含 pre-release 或测试后缀
+function isStrictSemverTag(tag) {
+  return STRICT_SEMVER_RE.test(String(tag || ''));
+}
+
 function pickPortableAsset(assets) {
   const list = Array.isArray(assets) ? assets : [];
   return (
@@ -77,8 +88,36 @@ function parseReleasePayload(data) {
   };
 }
 
-// 使用 https/http 拉取 JSON。
+// 从 release 列表中选出最佳候选版本（高于 currentVersion 且严格 semver）
+function pickBestRelease(releases, currentVersion) {
+  const current = normalizeVersion(currentVersion);
+  const candidates = [];
+
+  for (const r of releases) {
+    // 跳过草稿与预发布
+    if (r.draft || r.prerelease) continue;
+    // 跳过非严格 semver 的 tag（如 v2.0.0-test）
+    if (!isStrictSemverTag(r.tag_name)) continue;
+    const parsed = parseReleasePayload(r);
+    // 必须有可下载的 exe
+    if (!parsed.downloadUrl) continue;
+    // 必须高于当前版本
+    if (compareSemver(parsed.version, current) <= 0) continue;
+    candidates.push(parsed);
+  }
+
+  // 按版本号降序排列，取最高
+  candidates.sort((a, b) => compareSemver(b.version, a.version));
+  return candidates[0] || null;
+}
+
+// 使用 https/http 拉取 JSON，最多跟随 5 次重定向。
 function httpGetJson(url, opts = {}) {
+  const maxRedirect = 5;
+  const redirects = opts._redirects != null ? opts._redirects : 0;
+  if (redirects > maxRedirect) {
+    return Promise.reject(new Error('重定向次数过多'));
+  }
   return new Promise((resolve, reject) => {
     const lib = url.startsWith('https') ? https : http;
     const req = lib.get(
@@ -94,7 +133,7 @@ function httpGetJson(url, opts = {}) {
       (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           res.resume();
-          httpGetJson(res.headers.location, opts).then(resolve, reject);
+          httpGetJson(res.headers.location, { ...opts, _redirects: redirects + 1 }).then(resolve, reject);
           return;
         }
         if (res.statusCode !== 200) {
@@ -121,8 +160,13 @@ function httpGetJson(url, opts = {}) {
   });
 }
 
-// 下载文件。
+// 下载文件，最多跟随 5 次重定向，支持进度回调。
 function httpDownload(url, destPath, onProgress) {
+  const maxRedirect = 5;
+  const redirects = onProgress && onProgress._redirects != null ? onProgress._redirects : 0;
+  if (redirects > maxRedirect) {
+    return Promise.reject(new Error('下载重定向次数过多'));
+  }
   return new Promise((resolve, reject) => {
     const lib = url.startsWith('https') ? https : http;
     const req = lib.get(
@@ -134,7 +178,8 @@ function httpDownload(url, destPath, onProgress) {
       (res) => {
         if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
           res.resume();
-          httpDownload(res.headers.location, destPath, onProgress).then(resolve, reject);
+          const nextProgress = onProgress && { ...onProgress, _redirects: redirects + 1 };
+          httpDownload(res.headers.location, destPath, nextProgress).then(resolve, reject);
           return;
         }
         if (res.statusCode !== 200) {
@@ -164,16 +209,31 @@ function httpDownload(url, destPath, onProgress) {
   });
 }
 
-async function fetchLatestRelease(opts = {}) {
-  const apiUrl = opts.apiUrl || DEFAULT_API;
-  const data = await httpGetJson(apiUrl, opts);
-  return parseReleasePayload(data);
+// 获取 release 列表并过滤
+async function fetchBestRelease(currentVersion, opts = {}) {
+  const apiUrl = opts.apiUrl || DEFAULT_API_LIST;
+  const list = await httpGetJson(apiUrl, opts);
+  if (!Array.isArray(list)) {
+    throw new Error('GitHub API 返回格式异常');
+  }
+  const best = pickBestRelease(list, currentVersion);
+  return best;
 }
 
 async function checkForUpdate(currentVersion, opts = {}) {
-  const fetchFn = opts.fetchLatest || fetchLatestRelease;
-  const latest = await fetchFn(opts);
+  const fetchFn = opts.fetchBest || fetchBestRelease;
+  const latest = await fetchFn(currentVersion, opts);
   const current = normalizeVersion(currentVersion);
+
+  if (!latest) {
+    return {
+      updateAvailable: false,
+      currentVersion: current,
+      latestVersion: current,
+      latest: null,
+    };
+  }
+
   const cmp = compareSemver(latest.version, current);
   return {
     updateAvailable: cmp > 0,
@@ -185,16 +245,11 @@ async function checkForUpdate(currentVersion, opts = {}) {
 
 // ─── 自动下载并安装（便携 exe 接力） ─────────────────────────
 
-// 计算当前 exe 路径（app.isPackaged 时就是自身，dev 模式取 package.json 所在目录占位）
 function exePath() {
-  // 在便携包中 process.execPath 就是 .exe 自身
   return process.execPath;
 }
 
 // 生成升级批处理脚本内容。
-// oldExe: 当前运行中的 exe 路径
-// newExe: 已下载到 temp 的新 exe 路径
-// 返回脚本字符串。
 function buildUpgradeBat(oldExe, newExe) {
   const oldQuoted = JSON.stringify(oldExe);
   const newQuoted = JSON.stringify(newExe);
@@ -262,12 +317,14 @@ function downloadAndInstall(latest, onProgress) {
 
 module.exports = {
   DEFAULT_REPO,
-  DEFAULT_API,
+  DEFAULT_API_LIST,
   normalizeVersion,
   compareSemver,
+  isStrictSemverTag,
   pickPortableAsset,
   parseReleasePayload,
-  fetchLatestRelease,
+  pickBestRelease,
+  fetchBestRelease,
   checkForUpdate,
   httpDownload,
   downloadAndInstall,

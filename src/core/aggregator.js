@@ -4,7 +4,7 @@
 // 输出结构供 UI 与 CLI 直接消费。
 
 const { costOfTokens } = require('../pricing/calculator');
-
+const { localDayKey } = require('../shared/date');
 // 新建一个空的用量桶。
 function emptyBucket() {
   return {
@@ -24,14 +24,6 @@ function addTokens(bucket, ev) {
   bucket.total += ev.input + ev.output + ev.cacheWrite + ev.cacheRead;
 }
 
-// 本地时区日期键 YYYY-MM-DD。
-function localDayKey(ts) {
-  const d = ts == null ? new Date() : new Date(ts);
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
 
 // 计算本地时区“今日零点”的毫秒时间戳。
 function startOfToday(now = Date.now()) {

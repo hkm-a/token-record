@@ -16,7 +16,10 @@ function loadPrefs(filePath) {
   try {
     const raw = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     return { ...DEFAULTS, ...raw };
-  } catch (_err) {
+  } catch (err) {
+    if (err.code !== 'ENOENT') {
+      console.warn('[token-record] 读取偏好文件失败：', err.message);
+    }
     return { ...DEFAULTS };
   }
 }
