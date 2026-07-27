@@ -19,3 +19,4 @@ out/
 
 # Tauri 签名私钥（切勿提交）
 src-tauri/keys/*.key
+*.exe
