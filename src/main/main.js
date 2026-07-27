@@ -317,6 +317,7 @@ async function runUpdateCheck(opts = {}) {
   const silent = !!opts.silent;
   try {
     const result = await checkForUpdate(APP_VERSION);
+
     if (!result.updateAvailable) {
       if (!silent) {
         dialog.showMessageBox({
@@ -330,8 +331,13 @@ async function runUpdateCheck(opts = {}) {
       return result;
     }
 
-    const latest = result.latest;
+    // 静默模式：不弹对话框，返回结果让调用方通知 UI 闪版本号
+    if (silent) {
+      return result;
+    }
 
+    // 非静默：弹对话框让用户选择
+    const latest = result.latest;
     const { response } = await dialog.showMessageBox({
       type: 'info',
       title: '发现新版本',
@@ -350,11 +356,8 @@ async function runUpdateCheck(opts = {}) {
     });
 
     if (latest.downloadUrl && response === 0) {
-      // 自动下载 → 替换 → 重启
       try {
-        // 静默下载新版本
         await downloadAndInstall(latest);
-        // 下载完成，提示重启
         await dialog.showMessageBox({
           type: 'info',
           title: '更新完成',
