@@ -28,12 +28,7 @@
     "security": {
       "csp": null
     },
-    "withGlobalTauri": true,
-    "trayIcon": {
-      "iconPath": "icons/icon.png",
-      "iconAsTemplate": true,
-      "tooltip": "Token记录"
-    }
+    "withGlobalTauri": true
   },
   "bundle": {
     "active": true,
