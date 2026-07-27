@@ -388,11 +388,6 @@ function rebuildTrayMenu() {
   if (!tray || tray.isDestroyed()) return;
   const openLogin = isOpenAtLoginEnabled();
   const menu = Menu.buildFromTemplate([
-    {
-      label: `Token 记录 v${APP_VERSION}`,
-      enabled: false,
-    },
-    { type: 'separator' },
     { label: '显示 / 隐藏', click: () => toggleWindow() },
     { label: '立即刷新', click: () => tick() },
     { type: 'separator' },
