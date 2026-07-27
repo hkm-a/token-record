@@ -11,6 +11,9 @@ contextBridge.exposeInMainWorld('api', {
   onPrefs: (callback) => {
     ipcRenderer.on('prefs', (_event, data) => callback(data));
   },
+  onUpdateAvailable: (callback) => {
+    ipcRenderer.on('update-available', (_event, data) => callback(data));
+  },
   // 关闭按钮：隐藏到托盘（真正退出走托盘菜单）
   hide: () => ipcRenderer.send('hide-window'),
   quit: () => ipcRenderer.send('quit'),
@@ -21,4 +24,5 @@ contextBridge.exposeInMainWorld('api', {
   fitContent: () => ipcRenderer.send('fit-content'),
   getVersion: () => ipcRenderer.invoke('get-version'),
   getPrefs: () => ipcRenderer.invoke('get-prefs'),
+  startUpdate: () => ipcRenderer.send('start-update'),
 });

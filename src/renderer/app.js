@@ -286,7 +286,25 @@ function bindControls() {
     if (!muted) playCashRegister();
   });
 }
-
 buildCards();
 bindControls();
 window.api.onSnapshot(handleData);
+
+// ─── 更新指示器 ─────────────────────────────────
+
+let updateInfo = null;
+const versionEl = document.getElementById('appVersion');
+
+window.api.onUpdateAvailable((info) => {
+  updateInfo = info;
+  versionEl.classList.add('has-update');
+  versionEl.title = `点击更新至 v${info.latestVersion}`;
+  if (window.api.fitContent) window.api.fitContent();
+});
+
+versionEl.addEventListener('click', () => {
+  if (!updateInfo) return;
+  versionEl.classList.remove('has-update');
+  versionEl.title = '更新中…';
+  if (window.api.startUpdate) window.api.startUpdate();
+});

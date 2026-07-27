@@ -465,8 +465,14 @@ function bootstrap() {
 
     // 启动后静默检查更新（截图模式跳过）
     if (!process.env.TOKENREC_SHOT) {
-      setTimeout(() => {
-        runUpdateCheck({ silent: true });
+      setTimeout(async () => {
+        const result = await runUpdateCheck({ silent: true });
+        if (result && result.updateAvailable && win && !win.isDestroyed()) {
+          win.webContents.send('update-available', {
+            latestVersion: result.latestVersion,
+            currentVersion: result.currentVersion,
+          });
+        }
       }, UPDATE_CHECK_DELAY_MS);
     }
 
@@ -499,7 +505,26 @@ function bootstrap() {
       isQuitting = true;
       app.quit();
     });
-    ipcMain.on('refresh-now', () => tick());
+    ipcMain.on('start-update', async () => {
+      // 用户从 UI 点了版本号 → 静默下载并重启
+      try {
+        const { checkForUpdate, downloadAndInstall } = require('./updater');
+        const result = await checkForUpdate(APP_VERSION);
+        if (!result || !result.updateAvailable) return;
+        await downloadAndInstall(result.latest);
+        dialog.showMessageBox({
+          type: 'info',
+          title: '更新完成',
+          message: `Token 记录 v${result.latestVersion} 已就绪，即将重启。`,
+          buttons: ['好的'],
+        }).then(() => {
+          isQuitting = true;
+          app.quit();
+        });
+      } catch (err) {
+        console.error('自动更新失败：', err);
+      }
+    });
     ipcMain.on('toggle-pin', (_e, pinned) => {
       if (win) win.setAlwaysOnTop(!!pinned, 'screen-saver');
     });
