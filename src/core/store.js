@@ -79,19 +79,24 @@ class Store {
       const batch = tasks.slice(i, i + BATCH);
       const results = await Promise.all(
         batch.map(async ({ file: f, collector }) => {
-          const cached = this.fileCache.get(f.path);
-          if (cached && cached.mtimeMs === f.mtimeMs && cached.size === f.size) {
-            return cached.events;
+          try {
+            const cached = this.fileCache.get(f.path);
+            if (cached && cached.mtimeMs === f.mtimeMs && cached.size === f.size) {
+              return { events: cached.events, path: f.path };
+            }
+            const events = await collector.collectFile(f);
+            this.fileCache.set(f.path, { mtimeMs: f.mtimeMs, size: f.size, events });
+            this._trimCache();
+            return { events, path: f.path };
+          } catch (err) {
+            // 单个文件解析失败不影响批次中其他文件
+            console.warn('[token-record] 解析文件失败（已跳过）：', f.path, err.message);
+            return { events: [], path: f.path };
           }
-          const events = await collector.collectFile(f);
-          this.fileCache.set(f.path, { mtimeMs: f.mtimeMs, size: f.size, events });
-          // 限制缓存大小，防止长期使用内存膨胀
-          this._trimCache();
-          return events;
         })
       );
-      for (const events of results) {
-        for (const e of events) all.push(e);
+      for (const r of results) {
+        for (const e of r.events) all.push(e);
       }
     }
 
