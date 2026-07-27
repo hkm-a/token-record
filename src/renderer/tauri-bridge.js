@@ -18,11 +18,8 @@
       const feed = () =>
         invoke('get_snapshot')
           .then((data) => {
-            // 对比 generatedAt，数据未变化则跳过
             if (lastSnapshot && data.snapshot.generatedAt === lastSnapshot.snapshot.generatedAt) return;
-            // 对比 grand.total，未变化则跳过动画
             if (lastSnapshot && data.snapshot.grand.total === lastSnapshot.snapshot.grand.total) {
-              // 数据量未变但仍需更新 UI（不触发动画），直接设 isFirst=false
               data.isFirst = false;
             }
             lastSnapshot = data;
@@ -55,7 +52,6 @@
       invoke('get_snapshot')
         .then((data) => {
           lastSnapshot = data;
-          // 直接通知前端
           const evt = new CustomEvent('tr-snapshot', { detail: data });
           window.dispatchEvent(evt);
         })
@@ -69,8 +65,8 @@
       // 测量实际内容高度并调整窗口（Tauri v2 setSize）
       requestAnimationFrame(() => {
         const h = document.body.scrollHeight;
-        if (h > 0) {
-          appWindow.setSize({ width: 420, height: Math.min(h + 8, 600) });
+        if (h > 100) {
+          appWindow.setSize({ width: 420, height: Math.min(h + 4, 640) }).catch(() => {});
         }
       });
     },
