@@ -59,7 +59,7 @@
     },
 
     togglePin: (pinned) => { appWindow.setAlwaysOnTop(pinned); },
-    setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.5.8', open_at_login: false } }); },
+    setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.0', open_at_login: false } }); },
 
     fitContent: () => {
       // 测量实际内容高度并调整窗口（Tauri v2 setSize）

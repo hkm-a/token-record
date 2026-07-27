@@ -25,13 +25,13 @@ fn save_prefs(prefs: Preferences) {
 
 #[tauri::command]
 fn get_version() -> String {
-    "1.5.8".to_string()
+    "1.6.0".to_string()
 }
 
 #[tauri::command]
 fn get_app_info() -> serde_json::Value {
     serde_json::json!({
-        "version": "1.5.8",
+        "version": "1.6.0",
         "appId": "com.hkma.token-record",
     })
 }

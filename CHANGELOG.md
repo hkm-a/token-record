@@ -1,6 +1,26 @@
 # 变更记录
 
-## 1.5.8 — 2026-07-28
+## 1.6.0 — 2026-07-28
+
+### 重构
+
+- **Tauri v2 迁移完成**：从 Electron（63MB）迁移至 Tauri v2（3.8MB），体积缩小 17×
+- **Rust 后端**：采集器、聚合器、定价计算全部用 Rust 重写，编译时嵌入 pricing.json
+- **前端桥接**：`tauri-bridge.js` 提供 `window.api` 兼容接口，`app.js` 零改动
+- **Delta 增量**：后端计算快照 delta，仅 token 增量 > 0 时前端弹气泡，消除鬼畜刷新
+- **透明悬浮窗**：`transparent: true` + `shadow: false` + `decorations: false`
+- **自动更新**：集成 `tauri-plugin-updater`，签名密钥对已生成
+- **Rust CLI**：`trcli` 二进制（569KB），输出与 JS CLI 一致
+- **垃圾清理**：删除全部 Electron 运行时代码（main/collectors/cli/store/files/paths）
+- **垃圾清理**：删除 electron-builder 配置、afterPack.js、launch.cmd
+- **垃圾清理**：删除 32 个 Electron 依赖测试，保留 27 个核心逻辑测试
+- **双托盘修复**：删除 tauri.conf.json trayIcon 配置（与代码手动创建重复）
+
+### 测试
+
+- Rust 集成测试 15/15 通过
+- JS 核心测试 27/27 通过（aggregator/calculator/csv/date/history）
+
 
 ### 优化
 

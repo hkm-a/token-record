@@ -1,19 +1,12 @@
 {
   "name": "token-record",
-  "version": "1.5.8",
+  "version": "1.6.0",
   "description": "记录 Claude Code、Codex、Pi、Grok Build 的 token 与金钱消耗，并以桌面悬浮窗展示",
-  "main": "src/main/main.js",
   "scripts": {
-    "start": "electron .",
-    "cli": "node src/cli.js",
     "test": "node --test",
     "icon": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-icon.ps1 && node scripts/png2ico.js",
-    "shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/make-shortcut.ps1",
-    "pack": "electron-builder --win portable --config.electronDist=node_modules/electron/dist",
     "tauri": "npx @tauri-apps/cli@2.11.4",
-    "tauri:build": "npx @tauri-apps/cli@2.11.4 build",
-    "dist": "npm run pack",
-    "dist:tauri": "npx @tauri-apps/cli@2.11.4 build"
+    "tauri:build": "npx @tauri-apps/cli@2.11.4 build"
   },
   "keywords": [
     "token",
@@ -23,57 +16,12 @@
     "codex",
     "pi",
     "grok",
-    "electron"
+    "tauri"
   ],
   "author": "hkm",
   "license": "MIT",
   "devDependencies": {
-    "@tauri-apps/cli": "^2.11.4",
-    "electron": "^33.0.0",
-    "electron-builder": "^25.1.8"
-  },
-  "build": {
-    "appId": "com.hkma.token-record",
-    "productName": "Token记录",
-    "copyright": "Copyright © 2026 hkm-a",
-    "directories": {
-      "output": "dist",
-      "buildResources": "build"
-    },
-    "files": [
-      "src/**/*",
-      "build/icon.png",
-      "build/icon.ico",
-      "package.json"
-    ],
-    "extraResources": [
-      {
-        "from": "build",
-        "to": "build",
-        "filter": [
-          "icon.png",
-          "icon.ico"
-        ]
-      }
-    ],
-    "win": {
-      "target": [
-        {
-          "target": "portable",
-          "arch": [
-            "x64"
-          ]
-        }
-      ],
-      "icon": "build/icon.ico",
-      "artifactName": "TokenRecord-${version}-portable.${ext}"
-    },
-    "portable": {
-      "artifactName": "TokenRecord-${version}-portable.${ext}"
-    },
-    "asar": true,
-    "compression": "maximum",
-    "afterPack": "./build/afterPack.js"
+    "@tauri-apps/cli": "^2.11.4"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.11.1",

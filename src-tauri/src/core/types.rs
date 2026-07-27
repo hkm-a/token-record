@@ -213,7 +213,7 @@ impl Default for Preferences {
         Self {
             compact: false,
             open_at_login: false,
-            version: "1.5.8".to_string(),
+            version: "1.6.0".to_string(),
         }
     }
 }
