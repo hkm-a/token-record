@@ -1,11 +1,11 @@
 {
-  "version": "1.6.3",
-  "notes": "根治拖拽卡顿与折叠死区：快照刷新移出主线程 + 文件解析缓存；修复 setSize 传参与 SWP_NOSIZE 缺失导致的窗口异常",
-  "pub_date": "2026-07-28T08:54:29Z",
+  "version": "1.6.4",
+  "notes": "单位新增 B 档；修复隐藏/置顶/刷新按钮与更新检查反馈；折叠零延迟；移除状态栏冗余文案",
+  "pub_date": "2026-07-28T10:08:13Z",
   "platforms": {
     "windows-x86_64": {
-      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.3/Token._1.6.3_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXFZcis3UWozVCtRbisyNkZ0bVVJbDdPSDZLNFBpNERnLytNaXpRK2NBNUR4Z2xtZ0RoZ1dvUTJmc0dSRnRJRkZPalNtTXBnV3VvRFFQcmFMaFVhaVE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjI4MjgzCWZpbGU6VG9rZW7orrDlvZVfMS42LjNfeDY0LXNldHVwLmV4ZQp4Z2x6U2VEVXErSVFhT1hZME9veE52ZE9tY2cxN0pIai9VdHd4WVVUUk96bjRlOG95WnRIclpsSFR1REE2YWcvcGNld3hLT2NYWFZMQklmK1EzcTJDUT09Cg=="
+      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.4/Token._1.6.4_x64-setup.exe",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXJLaCt5Y0tDUW9icVpISllGVlM4R3hUVCtuTXducjNVMkZIT09zcnpHR3NUL0FSZVdyU3djQ3NqUFU4d0drNHkwdWRzV0daMjIzaWRkYWhMdjlkMlFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjMyOTg5CWZpbGU6VG9rZW7orrDlvZVfMS42LjRfeDY0LXNldHVwLmV4ZQpDNkxwM1NTeGY2WlpVVnlMTFU5bXI0TXdHZER0dTlQWVZrcmRNOGEvaWJJVlVqUURQeTAvODRUMHNmMGpNQ3F4VFcxZEZNeXFvaS81YUN5Y1ZVVEJCQT09Cg=="
     }
   }
 }
