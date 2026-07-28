@@ -42,20 +42,43 @@ fn force_window_resize(window: tauri::Window) {
             SWP_NOACTIVATE, SWP_NOZORDER, SWP_NOMOVE, SWP_FRAMECHANGED
         };
         unsafe {
-            let _ = SetWindowPos(
-                hwnd,
-                Some(HWND_TOP),
-                0, 0, 0, 0,
+            let _ = SetWindowPos(hwnd, Some(HWND_TOP), 0, 0, 0, 0,
                 SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED
             );
         }
-        // DwmFlush - not essential, just ensures DWM processes the update
     }
 }
 
 #[cfg(not(windows))]
 #[tauri::command]
 fn force_window_resize(_window: tauri::Window) {}
+
+#[cfg(windows)]
+#[tauri::command]
+fn set_window_layered(window: tauri::Window, layered: bool) {
+    if let Ok(hwnd) = window.hwnd() {
+        use windows::Win32::UI::WindowsAndMessaging::{
+            GetWindowLongW, SetWindowLongW, GWL_EXSTYLE,
+            WS_EX_LAYERED, WS_EX_TRANSPARENT,
+            SetWindowPos, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_FRAMECHANGED
+        };
+        unsafe {
+            let style = GetWindowLongW(hwnd, GWL_EXSTYLE);
+            let new_style = if layered {
+                style | (WS_EX_LAYERED.0 as i32) | (WS_EX_TRANSPARENT.0 as i32)
+            } else {
+                style & !(WS_EX_LAYERED.0 as i32) & !(WS_EX_TRANSPARENT.0 as i32)
+            };
+            SetWindowLongW(hwnd, GWL_EXSTYLE, new_style);
+            let _ = SetWindowPos(hwnd, None, 0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        }
+    }
+}
+
+#[cfg(not(windows))]
+#[tauri::command]
+fn set_window_layered(_window: tauri::Window, _layered: bool) {}
 
 #[tauri::command]
 async fn check_update(app: AppHandle) -> Result<(), String> {
@@ -192,6 +215,7 @@ fn main() {
             get_version,
             quit_app,
             force_window_resize,
+            set_window_layered,
             check_update,
             apply_update,
         ])

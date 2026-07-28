@@ -289,22 +289,25 @@ function bindControls() {
 
 
   // 窗口拖拽检测：CSS -webkit-app-region 负责实际拖拽，JS 负责性能优化
+  // 同时调用 set_window_layered 临时移除 WS_EX_LAYERED，消除 DWM 透明合成卡顿
   let dragTimer = null;
   const titlebar = document.querySelector('.titlebar');
   if (titlebar) {
     titlebar.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.win-controls')) return;
       document.body.classList.add('dragging');
-      // 兜底 3 秒后自动恢复（防止 pointerup 因 OS 拖拽未送达）
+      // 移除窗口透明层样式，DWM 不再需要 alpha 合成
+      if (window.api && window.api.setLayered) window.api.setLayered(false);
+      // 兜底 3 秒后自动恢复
       if (dragTimer) clearTimeout(dragTimer);
       dragTimer = setTimeout(() => {
         document.body.classList.remove('dragging');
         dragTimer = null;
+        if (window.api && window.api.setLayered) window.api.setLayered(true);
         if (window.api && window.api.refreshNow) window.api.refreshNow();
       }, 3000);
     });
   }
-  // pointerup 一定在下次点击时触发（即使在 OS 拖拽结束后）
   document.addEventListener('pointerup', () => {
     if (!document.body.classList.contains('dragging')) return;
     document.body.classList.remove('dragging');
@@ -312,6 +315,8 @@ function bindControls() {
       clearTimeout(dragTimer);
       dragTimer = null;
     }
+    // 恢复透明层样式
+    if (window.api && window.api.setLayered) window.api.setLayered(true);
     if (window.api && window.api.refreshNow) window.api.refreshNow();
   });
   // 注意：不要监听 pointerleave，拖拽时鼠标离开窗口会误移除
