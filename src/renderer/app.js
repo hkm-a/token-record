@@ -316,10 +316,10 @@ buildCards();
 bindControls();
 window.api.onSnapshot(handleData);
 
-// 启动后 5 秒自动检查更新
+// 启动后 10 秒自动检查更新（点击版本号可随时手动触发）
 setTimeout(() => {
   if (window.api && window.api.startUpdate) window.api.startUpdate();
-}, 5000);
+}, 10000);
 
 // ─── 更新指示器 ─────────────────────────────────
 
@@ -329,9 +329,12 @@ const versionEl = document.getElementById('appVersion');
 
 window.api.onUpdateAvailable((info) => {
   updateInfo = info;
-  if (updateState === 'idle') {
+  // 只要还没开始下载/重启，就显示金色可点击
+  if (updateState === 'idle' || updateState === 'available') {
+    updateState = 'available';
     versionEl.classList.add('has-update');
     versionEl.title = `点击更新至 v${info.latestVersion}`;
+    versionEl.textContent = 'v' + info.latestVersion;
     if (window.api.fitContent) window.api.fitContent();
   }
 });
@@ -352,11 +355,22 @@ window.api.onUpdateProgress((data) => {
 
 versionEl.addEventListener('click', () => {
   if (updateState === 'ready') {
+    // 已下载完成，点击重启
     if (window.api.applyUpdate) window.api.applyUpdate();
     return;
   }
-  if (!updateInfo || updateState !== 'idle' && updateState !== 'available') return;
-  // 标记已处理，防止重复点击
+  if (updateState === 'downloading') return; // 下载中，无视第二次点击
+
+  // 点击版本号 = 手动触发检查更新
+  if (!updateInfo) {
+    // 尚无更新信息 → 触发首次检查
+    updateState = 'available';
+    versionEl.title = '检查中…';
+    if (window.api.startUpdate) window.api.startUpdate();
+    return;
+  }
+
+  // 已有更新信息 → 开始下载
   updateState = 'available';
   versionEl.classList.remove('has-update');
   versionEl.title = '检查中…';

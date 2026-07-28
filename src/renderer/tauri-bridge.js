@@ -81,7 +81,10 @@
     getVersion: () => invoke('get_version'),
     getPrefs: () => invoke('get_prefs'),
 
-    startUpdate: () => { invoke('check_update'); },
+    startUpdate: () => {
+      invoke('check_update')
+        .catch((e) => console.warn('[tr] check_update failed:', e));
+    },
     applyUpdate: () => { invoke('apply_update'); },
   };
 })();
