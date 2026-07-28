@@ -52,7 +52,40 @@ async fn apply_update(app: AppHandle) -> Result<(), String> {
     let updater = app.updater().map_err(|e| e.to_string())?;
     let response = updater.check().await.map_err(|e| e.to_string())?;
     if let Some(update) = response {
-        update.download_and_install(|_, _| {}, || {}).await.map_err(|e| e.to_string())?;
+        let latest = update.version.clone();
+        let app_progress = app.clone();
+        let app_ready = app.clone();
+        let latest_progress = latest.clone();
+        update
+            .download_and_install(
+                move |bytes_downloaded, content_length| {
+                    let total = content_length.unwrap_or(0) as f64;
+                    let percent = if total > 0.0 {
+                        (bytes_downloaded as f64 / total * 100.0).round() as u32
+                    } else {
+                        0
+                    };
+                    let _ = app_progress.emit(
+                        "update-download-progress",
+                        serde_json::json!({
+                            "status": "downloading",
+                            "percent": percent,
+                            "latestVersion": latest_progress,
+                        }),
+                    );
+                },
+                move || {
+                    let _ = app_ready.emit(
+                        "update-download-progress",
+                        serde_json::json!({
+                            "status": "ready",
+                            "latestVersion": latest,
+                        }),
+                    );
+                },
+            )
+            .await
+            .map_err(|e| e.to_string())?;
         app.exit(0);
     }
     Ok(())

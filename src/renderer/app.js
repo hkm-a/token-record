@@ -371,8 +371,5 @@ versionEl.addEventListener('click', () => {
   }
 
   // 已有更新信息 → 开始下载
-  updateState = 'available';
-  versionEl.classList.remove('has-update');
-  versionEl.title = '检查中…';
-  if (window.api.startUpdate) window.api.startUpdate();
+  if (window.api.applyUpdate) window.api.applyUpdate();
 });
