@@ -213,7 +213,7 @@ impl Default for Preferences {
         Self {
             compact: false,
             open_at_login: false,
-            version: "1.6.2".to_string(),
+            version: env!("CARGO_PKG_VERSION").to_string(),
         }
     }
 }

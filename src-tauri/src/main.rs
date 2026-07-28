@@ -8,9 +8,13 @@ use token_record_lib::config;
 
 // ── Tauri 命令 ──
 
+/// 快照刷新是重 IO（全量/增量扫描各工具会话目录），必须放到阻塞线程池执行；
+/// 若作为同步命令跑在主线程，会阻塞 Win32 消息循环，导致拖拽卡顿、按钮点击丢失。
 #[tauri::command]
-fn get_snapshot() -> SnapshotOutput {
-    token_record_lib::refresh()
+async fn get_snapshot() -> SnapshotOutput {
+    tauri::async_runtime::spawn_blocking(token_record_lib::refresh)
+        .await
+        .expect("snapshot 刷新任务异常退出")
 }
 
 #[tauri::command]
@@ -25,7 +29,7 @@ fn save_prefs(prefs: Preferences) {
 
 #[tauri::command]
 fn get_version() -> String {
-    "1.6.2".to_string()
+    env!("CARGO_PKG_VERSION").to_string()
 }
 
 #[tauri::command]
@@ -33,17 +37,20 @@ fn quit_app(app: AppHandle) {
     app.exit(0);
 }
 
+/// 缩放后强制刷新非客户区/DWM 命中区域。
+/// 必须带 SWP_NOSIZE|SWP_NOMOVE：SetWindowPos 的 cx/cy 传 0 而缺少 SWP_NOSIZE
+/// 会把窗口真实缩成 0x0（1.6.2 的窗口消失/死区来源之一）。
 #[cfg(windows)]
 #[tauri::command]
 fn force_window_resize(window: tauri::Window) {
     if let Ok(hwnd) = window.hwnd() {
         use windows::Win32::UI::WindowsAndMessaging::{
             SetWindowPos, HWND_TOP,
-            SWP_NOACTIVATE, SWP_NOZORDER, SWP_NOMOVE, SWP_FRAMECHANGED
+            SWP_NOACTIVATE, SWP_NOZORDER, SWP_NOMOVE, SWP_NOSIZE, SWP_FRAMECHANGED
         };
         unsafe {
             let _ = SetWindowPos(hwnd, Some(HWND_TOP), 0, 0, 0, 0,
-                SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED
+                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED
             );
         }
     }

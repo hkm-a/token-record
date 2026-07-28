@@ -3,6 +3,52 @@ use super::types::TokenEvent;
 use chrono::{Local, TimeZone, Utc};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
+use std::sync::{LazyLock, Mutex};
+use std::time::SystemTime;
+
+/// 单文件解析缓存条目：以 (mtime, size) 判定文件是否变化。
+struct CacheEntry {
+    mtime: SystemTime,
+    size: u64,
+    events: Vec<TokenEvent>,
+}
+
+/// 会话目录可达数百 MB，逐 tick 全量重解析不可接受；
+/// 未变化的文件直接复用上次解析结果，仅重读 mtime/size 变化的文件。
+/// 已删除文件的残留条目量级极小（仅解析结果），不做主动清理。
+/// 注意：缺失时间戳的记录 day_key 按解析时刻落日，缓存期间跨天不会重算（此类记录极少）。
+static PARSE_CACHE: LazyLock<Mutex<HashMap<PathBuf, CacheEntry>>> =
+    LazyLock::new(|| Mutex::new(HashMap::new()));
+
+/// 带缓存的单文件解析：文件未变化时返回缓存副本，否则调用 parse 并回填缓存。
+fn parse_file_cached(path: &Path, parse: fn(&Path) -> Vec<TokenEvent>) -> Vec<TokenEvent> {
+    let meta = match std::fs::metadata(path) {
+        Ok(m) => m,
+        Err(_) => return Vec::new(),
+    };
+    let mtime = meta.modified().unwrap_or(SystemTime::UNIX_EPOCH);
+    let size = meta.len();
+
+    {
+        let cache = PARSE_CACHE.lock().unwrap();
+        if let Some(entry) = cache.get(path) {
+            if entry.mtime == mtime && entry.size == size {
+                return entry.events.clone();
+            }
+        }
+    }
+
+    let events = parse(path);
+    PARSE_CACHE.lock().unwrap().insert(
+        path.to_path_buf(),
+        CacheEntry {
+            mtime,
+            size,
+            events: events.clone(),
+        },
+    );
+    events
+}
 
 /// Home 目录辅助
 pub fn home_dir() -> PathBuf {
@@ -85,7 +131,7 @@ pub fn collect_claude_events() -> Vec<TokenEvent> {
             let proj_dir = entry.path();
             if proj_dir.is_dir() {
                 for file in list_jsonl_files(&proj_dir) {
-                    events.extend(parse_claude_file(&file));
+                    events.extend(parse_file_cached(&file, parse_claude_file));
                 }
             }
         }
@@ -173,7 +219,7 @@ pub fn collect_codex_events() -> Vec<TokenEvent> {
     let files = list_jsonl_files_recursive(&root);
     let mut events = Vec::new();
     for file in &files {
-        events.extend(parse_codex_file(file));
+        events.extend(parse_file_cached(file, parse_codex_file));
     }
     events
 }
@@ -338,7 +384,7 @@ pub fn collect_pi_events() -> Vec<TokenEvent> {
     let files = list_jsonl_files_recursive(&root);
     let mut events = Vec::new();
     for file in &files {
-        events.extend(parse_pi_file(file));
+        events.extend(parse_file_cached(file, parse_pi_file));
     }
     events
 }
@@ -429,7 +475,7 @@ fn collect_grok_updates(dir: &Path, events: &mut Vec<TokenEvent>) {
             if path.is_dir() {
                 collect_grok_updates(&path, events);
             } else if path.file_name().and_then(|s| s.to_str()) == Some("updates.jsonl") {
-                events.extend(parse_grok_file(&path));
+                events.extend(parse_file_cached(&path, parse_grok_file));
             }
         }
     }

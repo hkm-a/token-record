@@ -10,8 +10,12 @@ use std::sync::Mutex;
 /// 全局状态：缓存上一次快照用于 delta 计算
 static LAST_SNAPSHOT: Mutex<Option<Snapshot>> = Mutex::new(None);
 
+/// 刷新串行锁：轮询与手动刷新可能并发触发，串行执行避免重复扫盘与 delta 错乱
+static REFRESH_LOCK: Mutex<()> = Mutex::new(());
+
 /// 刷新数据（核心 tick 逻辑）— 被 GUI 和 CLI 共用
 pub fn refresh() -> SnapshotOutput {
+    let _serial = REFRESH_LOCK.lock().unwrap();
     let mut events = Vec::new();
     events.extend(collectors::collect_claude_events());
     events.extend(collectors::collect_codex_events());

@@ -65,7 +65,10 @@
         window.__TAURI__ = {
           core: { invoke: () => Promise.reject(new Error('not in Tauri')) },
           event: { listen: () => Promise.resolve(() => {}) },
-          window: { getCurrentWindow: () => ({ hide(){}, setAlwaysOnTop(){}, setSize(){} }) },
+          window: {
+            getCurrentWindow: () => ({ hide(){}, setAlwaysOnTop(){}, setSize(){} }),
+            LogicalSize: function (width, height) { this.width = width; this.height = height; },
+          },
         };
       }
     </script>
