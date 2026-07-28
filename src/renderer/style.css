@@ -65,10 +65,25 @@ body {
   z-index: 1;
 }
 
-/* 拖拽时禁用高开销 backdrop-filter，避免卡顿 */
+/* 拖拽时极致简化渲染：纯色背景 + 去阴影 + 去动画，消除所有开销 */
 body.dragging #app {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
+  background: #1b1d28 !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+}
+body.dragging #app::before {
+  display: none !important;
+}
+body.dragging .live-dot {
+  animation: none !important;
+}
+body.dragging .period-bar.is-today {
+  box-shadow: none !important;
+}
+body.dragging .app-version.has-update {
+  animation: none !important;
 }
 
 

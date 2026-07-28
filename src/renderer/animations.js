@@ -8,6 +8,11 @@
 // 采用 easeOutExpo 缓动，收尾自然；对同一元素重入时取消上一段动画避免抖动。
 function animateValue(el, from, to, duration, formatter) {
   if (!el) return;
+  // 拖拽中不跑动画，直接跳到终值
+  if (document.body.classList.contains('dragging')) {
+    el.textContent = formatter(to);
+    return;
+  }
   if (el._raf) {
     cancelAnimationFrame(el._raf);
     el._raf = null;
@@ -19,6 +24,12 @@ function animateValue(el, from, to, duration, formatter) {
   }
   const start = performance.now();
   function frame(now) {
+    // 如果中途开始拖拽，立即跳到终值
+    if (document.body.classList.contains('dragging')) {
+      el.textContent = formatter(to);
+      el._raf = null;
+      return;
+    }
     let t = (now - start) / duration;
     if (t > 1) t = 1;
     const eased = t >= 1 ? 1 : 1 - Math.pow(2, -10 * t);
