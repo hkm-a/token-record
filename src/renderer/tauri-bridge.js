@@ -9,30 +9,48 @@
   const getCurrentWindow = window.__TAURI__.window.getCurrentWindow;
   const appWindow = getCurrentWindow();
 
-  // 缓存上次快照，仅在数据变化时通知前端（防止鬼畜刷新）
+  // ── 轮询（快照） ─────────────────────────────────
   let lastSnapshot = null;
+  let pollTimer = null;
+  let onDataCallback = null;
 
+  const feed = () => {
+    if (document.body.classList.contains('dragging')) return;
+    invoke('get_snapshot')
+      .then((data) => {
+        if (lastSnapshot && data.snapshot.generatedAt === lastSnapshot.snapshot.generatedAt) return;
+        if (lastSnapshot && data.snapshot.grand.total === lastSnapshot.snapshot.grand.total) {
+          data.isFirst = false;
+        }
+        lastSnapshot = data;
+        if (onDataCallback) onDataCallback(data);
+      })
+      .catch((e) => console.warn('[tr] snapshot:', e));
+  };
+
+  function startPolling() {
+    if (pollTimer) return;
+    feed();
+    pollTimer = setInterval(feed, 2000);
+  }
+  function stopPolling() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  // ── API ──────────────────────────────────────────
   window.api = {
 
     onSnapshot: (callback) => {
-      const feed = () => {
-        // 拖拽期间暂停轮询，避免 IPC + DOM 更新导致卡顿
-        if (document.body.classList.contains('dragging')) return;
-        invoke('get_snapshot')
-          .then((data) => {
-            if (lastSnapshot && data.snapshot.generatedAt === lastSnapshot.snapshot.generatedAt) return;
-            if (lastSnapshot && data.snapshot.grand.total === lastSnapshot.snapshot.grand.total) {
-              data.isFirst = false;
-            }
-            lastSnapshot = data;
-            callback(data);
-          })
-          .catch((e) => console.warn('[tr] snapshot:', e));
-      };
-      feed();
-      const id = setInterval(feed, 2000);
+      onDataCallback = callback;
+      startPolling();
       listen('refresh-now', () => feed());
-      return () => clearInterval(id);
+      return () => {
+        stopPolling();
+        onDataCallback = null;
+      };
     },
 
     onPrefs: (callback) => {
@@ -63,7 +81,6 @@
     setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.2', open_at_login: false } }); },
 
     fitContent: () => {
-      // 测量并调整窗口至内容高度
       setTimeout(async () => {
         const h = document.body.scrollHeight;
         if (h <= 60) return;
@@ -72,7 +89,6 @@
           await appWindow.setResizable(true);
           await appWindow.setMinSize({ width: 200, height: 50 });
           await appWindow.setSize({ width: 420, height: targetH });
-          // 强制 DWM 刷新窗口区域
           await invoke('force_window_resize');
           await appWindow.setResizable(false);
         } catch (_) {}
@@ -81,6 +97,9 @@
 
     getVersion: () => invoke('get_version'),
     getPrefs: () => invoke('get_prefs'),
+
+    startPolling,
+    stopPolling,
 
     startUpdate: () => {
       invoke('check_update')

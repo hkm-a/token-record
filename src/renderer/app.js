@@ -289,18 +289,23 @@ function bindControls() {
 
 
   // 窗口拖拽：data-tauri-drag-region（Tauri 内置）处理实际拖拽
-  // pointerdown 设 dragging 类以暂停轮询 & 动画
+  // pointerdown → 停掉轮询(setInterval)、设 dragging 类
+  // pointerup   → 恢复轮询、refresh、清 dragging 类
+
   let dragTimer = null;
   const titlebar = document.querySelector('.titlebar');
   if (titlebar) {
     titlebar.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.win-controls')) return;
       document.body.classList.add('dragging');
-      // 兜底 3 秒后自动恢复
+      // 完全停掉 setInterval 定时器（不让 Chromium 在拖拽中处理任何定时回调）
+      if (window.api && window.api.stopPolling) window.api.stopPolling();
+      // 兜底 3 秒
       if (dragTimer) clearTimeout(dragTimer);
       dragTimer = setTimeout(() => {
         document.body.classList.remove('dragging');
         dragTimer = null;
+        if (window.api && window.api.startPolling) window.api.startPolling();
         if (window.api && window.api.refreshNow) window.api.refreshNow();
       }, 3000);
     });
@@ -312,8 +317,15 @@ function bindControls() {
       clearTimeout(dragTimer);
       dragTimer = null;
     }
-    if (window.api && window.api.refreshNow) window.api.refreshNow();
+    // 恢复轮询 + 立即刷新
+    if (window.api && window.api.startPolling) {
+      window.api.startPolling();
+      window.api.refreshNow();
+    } else if (window.api && window.api.refreshNow) {
+      window.api.refreshNow();
+    }
   });
+  // 重要：不要监听 pointerleave，拖拽时鼠标离开窗口会误移除 dragging
   // 注意：不要监听 pointerleave，拖拽时鼠标离开窗口会误移除
 }
 buildCards();
