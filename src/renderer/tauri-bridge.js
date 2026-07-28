@@ -98,8 +98,14 @@
           await appWindow.setSize({ width: 420, height: targetH });
           console.log('[fitContent] force_window_resize');
           await invoke('force_window_resize');
-          console.log('[fitContent] setResizable(false)');
-          await appWindow.setResizable(false);
+          // 不用 setResizable(false) — 那会导致 DWM hit-test 回弹。
+          // 改为设 min=max=targetH，窗口被锁定在目标尺寸但 resizable 状态不变。
+          console.log('[fitContent] setMinSize(420,' + targetH + ')');
+          await appWindow.setMinSize({ width: 420, height: targetH });
+          if (appWindow.setMaxSize) {
+            console.log('[fitContent] setMaxSize(420,' + targetH + ')');
+            await appWindow.setMaxSize({ width: 420, height: targetH });
+          }
           console.log('[fitContent] done, targetH=' + targetH);
         } catch (e) {
           console.warn('[fitContent] ERROR:', e);
