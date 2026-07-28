@@ -83,15 +83,27 @@
     fitContent: () => {
       setTimeout(async () => {
         const h = document.body.scrollHeight;
-        if (h <= 60) return;
+        console.log('[fitContent] scrollHeight=' + h);
+        if (h <= 60) {
+          console.log('[fitContent] too small, skip');
+          return;
+        }
         const targetH = h + 8;
         try {
+          console.log('[fitContent] setResizable(true)');
           await appWindow.setResizable(true);
+          console.log('[fitContent] setMinSize(200,50)');
           await appWindow.setMinSize({ width: 200, height: 50 });
+          console.log('[fitContent] setSize(420,' + targetH + ')');
           await appWindow.setSize({ width: 420, height: targetH });
+          console.log('[fitContent] force_window_resize');
           await invoke('force_window_resize');
+          console.log('[fitContent] setResizable(false)');
           await appWindow.setResizable(false);
-        } catch (_) {}
+          console.log('[fitContent] done, targetH=' + targetH);
+        } catch (e) {
+          console.warn('[fitContent] ERROR:', e);
+        }
       }, 100);
     },
 
