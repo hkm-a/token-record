@@ -28,11 +28,34 @@ fn get_version() -> String {
     "1.6.2".to_string()
 }
 
-
 #[tauri::command]
 fn quit_app(app: AppHandle) {
     app.exit(0);
 }
+
+#[cfg(windows)]
+#[tauri::command]
+fn force_window_resize(window: tauri::Window) {
+    if let Ok(hwnd) = window.hwnd() {
+        use windows::Win32::UI::WindowsAndMessaging::{
+            SetWindowPos, HWND_TOP,
+            SWP_NOACTIVATE, SWP_NOZORDER, SWP_NOMOVE, SWP_FRAMECHANGED
+        };
+        unsafe {
+            let _ = SetWindowPos(
+                hwnd,
+                Some(HWND_TOP),
+                0, 0, 0, 0,
+                SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED
+            );
+        }
+        // DwmFlush - not essential, just ensures DWM processes the update
+    }
+}
+
+#[cfg(not(windows))]
+#[tauri::command]
+fn force_window_resize(_window: tauri::Window) {}
 
 #[tauri::command]
 async fn check_update(app: AppHandle) -> Result<(), String> {
@@ -168,6 +191,7 @@ fn main() {
             save_prefs,
             get_version,
             quit_app,
+            force_window_resize,
             check_update,
             apply_update,
         ])

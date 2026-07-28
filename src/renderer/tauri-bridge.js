@@ -68,8 +68,8 @@
 
     fitContent: () => {
       // 测量并调整窗口至内容高度
-      // 核心难题：Windows 透明窗口缩小后 hit-test 区域不更新
-      // 解法：临时 setResizable(true) 强制 DWM 刷新窗口区域
+      // Windows 透明窗口缩小后 DWM hit-test 区域不更新是关键难题
+      // 解法：setResizable toggle + 自定义 Win32 SetWindowPos(SWP_FRAMECHANGED)
       setTimeout(async () => {
         const h = document.body.scrollHeight;
         if (h <= 60) return;
@@ -78,6 +78,8 @@
           await appWindow.setResizable(true);
           await appWindow.setMinSize({ width: 200, height: 50 });
           await appWindow.setSize({ width: 420, height: targetH });
+          // 调用 Rust 命令强制 DWM 刷新窗口区域
+          await invoke('force_window_resize');
           await appWindow.setResizable(false);
         } catch (_) {}
       }, 100);
