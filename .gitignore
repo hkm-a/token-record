@@ -4,6 +4,7 @@ node_modules/
 # 运行时快照与本地缓存
 .cache/
 snapshot.json
+snapshot_output.json
 *.log
 
 # 操作系统

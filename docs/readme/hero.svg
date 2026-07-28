@@ -1,45 +1,69 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="420" viewBox="0 0 1200 420" role="img" aria-labelledby="title desc">
   <title id="title">Token 记录</title>
-  <desc id="desc">桌面用量监控工具，汇总 Claude Code、Codex 与 Grok Build 的本地 token 用量和费用。</desc>
-  <rect width="1200" height="380" rx="24" fill="#101418"/>
-  <rect x="1" y="1" width="1198" height="378" rx="23" fill="none" stroke="#29323a"/>
+  <desc id="desc">桌面用量监控工具，汇总 Claude Code、Codex、Pi 与 Grok Build 的本地 token 用量和费用。</desc>
+  <rect width="1200" height="420" rx="24" fill="#101418"/>
+  <rect x="1" y="1" width="1198" height="418" rx="23" fill="none" stroke="#29323a"/>
+  
+  <!-- 左侧标题区 -->
   <g id="title-block" transform="translate(64 60)">
-    <rect width="188" height="32" rx="16" fill="#17332d"/>
+    <rect width="196" height="32" rx="16" fill="#17332d"/>
     <circle cx="20" cy="16" r="5" fill="#70d6a6"/>
     <text x="36" y="22" fill="#a8dabb" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">DESKTOP USAGE MONITOR</text>
-    <text x="0" y="102" fill="#f5f7f8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="66" font-weight="700">Token 记录</text>
-    <text x="2" y="143" fill="#b8c1c8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="25">把三种 AI 编码工具的本地用量和费用放在桌面上。</text>
-    <text x="2" y="180" fill="#7f8a93" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="21">读取会话记录 · 增量汇总 · 分模型计价 · 可折叠悬浮窗</text>
-    <path d="M2 225H470" stroke="#2b343c" stroke-width="2"/>
-    <text x="2" y="264" fill="#d5dce0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">LOCAL ONLY</text>
-    <text x="160" y="264" fill="#77838d" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">2s INCREMENTAL SCAN</text>
+    
+    <text x="0" y="110" fill="#f5f7f8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="72" font-weight="700">Token 记录</text>
+    <text x="2" y="155" fill="#b8c1c8" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="25">把四种 AI 编码工具的本地用量和费用放在桌面上。</text>
+    <text x="2" y="194" fill="#7f8a93" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="21">读取会话记录 · 增量汇总 · 分模型计价 · 可折叠悬浮窗</text>
+    
+    <path d="M2 245H480" stroke="#2b343c" stroke-width="2"/>
+    
+    <text x="2" y="286" fill="#d5dce0" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">LOCAL ONLY</text>
+    <text x="170" y="286" fill="#77838d" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">2s INCREMENTAL SCAN</text>
+    <text x="380" y="286" fill="#77838d" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="18">4 SOURCES</text>
   </g>
-  <g id="usage-proof" transform="translate(690 48)">
-    <rect width="438" height="284" rx="18" fill="#171d22" stroke="#35414b"/>
-    <circle cx="32" cy="30" r="6" fill="#ec7765"/>
-    <circle cx="52" cy="30" r="6" fill="#e8bd63"/>
-    <circle cx="72" cy="30" r="6" fill="#70d6a6"/>
-    <text x="106" y="37" fill="#a7b2ba" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">LIVE SUMMARY</text>
-    <g id="claude-card" transform="translate(24 62)">
-      <rect width="390" height="54" rx="10" fill="#20282f"/>
-      <circle cx="23" cy="27" r="9" fill="#d97757"/>
-      <text x="48" y="24" fill="#f0f4f6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19" font-weight="600">Claude Code</text>
-      <text x="48" y="43" fill="#8d9aa4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">SESSION JSONL</text>
-      <text x="280" y="34" fill="#f2c8b7" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="21">TOKEN</text>
+
+  <!-- 右侧实时面板 -->
+  <g id="usage-proof" transform="translate(680 44)">
+    <rect width="456" height="332" rx="18" fill="#171d22" stroke="#35414b"/>
+    
+    <circle cx="28" cy="30" r="6" fill="#ec7765"/>
+    <circle cx="48" cy="30" r="6" fill="#e8bd63"/>
+    <circle cx="68" cy="30" r="6" fill="#70d6a6"/>
+    <text x="94" y="37" fill="#a7b2ba" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="16">LIVE SUMMARY</text>
+
+    <!-- Claude Code -->
+    <g id="claude-card" transform="translate(22 56)">
+      <rect width="412" height="50" rx="10" fill="#20282f"/>
+      <circle cx="21" cy="25" r="8" fill="#d97757"/>
+      <text x="46" y="22" fill="#f0f4f6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="18" font-weight="600">Claude Code</text>
+      <text x="46" y="40" fill="#8d9aa4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">SESSION JSONL · message.usage</text>
+      <text x="306" y="32" fill="#f2c8b7" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">TOKEN</text>
     </g>
-    <g id="codex-card" transform="translate(24 126)">
-      <rect width="390" height="54" rx="10" fill="#20282f"/>
-      <circle cx="23" cy="27" r="9" fill="#76a7e8"/>
-      <text x="48" y="24" fill="#f0f4f6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19" font-weight="600">Codex</text>
-      <text x="48" y="43" fill="#8d9aa4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">TOKEN_COUNT EVENT</text>
-      <text x="280" y="34" fill="#c8dcfa" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="21">COST</text>
+
+    <!-- Codex -->
+    <g id="codex-card" transform="translate(22 116)">
+      <rect width="412" height="50" rx="10" fill="#20282f"/>
+      <circle cx="21" cy="25" r="8" fill="#76a7e8"/>
+      <text x="46" y="22" fill="#f0f4f6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="18" font-weight="600">Codex</text>
+      <text x="46" y="40" fill="#8d9aa4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">TOKEN_COUNT EVENT · sessions/</text>
+      <text x="306" y="32" fill="#c8dcfa" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">COST</text>
     </g>
-    <g id="grok-card" transform="translate(24 190)">
-      <rect width="390" height="54" rx="10" fill="#20282f"/>
-      <circle cx="23" cy="27" r="9" fill="#c68ce6"/>
-      <text x="48" y="24" fill="#f0f4f6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="19" font-weight="600">Grok Build</text>
-      <text x="48" y="43" fill="#8d9aa4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="15">TURN_COMPLETED</text>
-      <text x="280" y="34" fill="#dec4ef" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="21">LOCAL</text>
+
+    <!-- Pi -->
+    <g id="pi-card" transform="translate(22 176)">
+      <rect width="412" height="50" rx="10" fill="#20282f"/>
+      <circle cx="21" cy="25" r="8" fill="#f472b6"/>
+      <text x="46" y="22" fill="#f0f4f6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="18" font-weight="600">Pi</text>
+      <text x="46" y="40" fill="#8d9aa4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">MESSAGE USAGE · agent/sessions/</text>
+      <text x="306" y="32" fill="#f9c2dc" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">TOKEN</text>
+    </g>
+
+    <!-- Grok Build -->
+    <g id="grok-card" transform="translate(22 236)">
+      <rect width="412" height="50" rx="10" fill="#20282f"/>
+      <circle cx="21" cy="25" r="8" fill="#c68ce6"/>
+      <text x="46" y="22" fill="#f0f4f6" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', sans-serif" font-size="18" font-weight="600">Grok Build</text>
+      <text x="46" y="40" fill="#8d9aa4" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="14">TURN_COMPLETED · updates.jsonl</text>
+      <text x="306" y="32" fill="#dec4ef" font-family="ui-monospace, SFMono-Regular, Menlo, Consolas, monospace" font-size="20" font-weight="700">LOCAL</text>
     </g>
   </g>
 </svg>

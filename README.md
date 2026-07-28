@@ -1,4 +1,25 @@
-# Token 记录 · Desktop Token & Cost Monitor
+<div align="center">
+  <img src="docs/readme/hero.svg" alt="Token 记录" width="100%">
+</div>
+
+<p align="center">
+  <a href="https://github.com/hkm-a/token-record/releases">
+    <img src="https://img.shields.io/github/v/release/hkm-a/token-record?style=flat-square&label=版本&color=70d6a6" alt="版本">
+  </a>
+  <a href="LICENSE">
+    <img src="https://img.shields.io/github/license/hkm-a/token-record?style=flat-square&label=许可证&color=9b8cff" alt="许可证">
+  </a>
+  <a href="https://github.com/hkm-a/token-record/releases">
+    <img src="https://img.shields.io/github/downloads/hkm-a/token-record/total?style=flat-square&label=下载&color=d97757" alt="下载">
+  </a>
+  <img src="https://img.shields.io/badge/语言-Rust_+_JS-10a37f?style=flat-square" alt="语言">
+  <img src="https://img.shields.io/badge/平台-Windows-blueviolet?style=flat-square" alt="平台">
+  <img src="https://img.shields.io/badge/体积-3.8_MB-76a7e8?style=flat-square" alt="体积">
+</p>
+
+---
+
+**当前版本：v1.6.5** · [Releases](https://github.com/hkm-a/token-record/releases/tag/v1.6.5)
 
 本地优先的桌面悬浮窗：汇总 **Claude Code**、**Codex**、**Pi**、**Grok Build** 的 token 消耗与估算费用，数值变化带动效。无需账号、不上云。
 
@@ -7,8 +28,6 @@
 折叠态（标题栏「▁」）：仅两个大数字指标。
 
 ![折叠态](docs/preview-compact.png)
-
-**当前版本：v1.5.7** · [Releases](https://github.com/hkm-a/token-record/releases/tag/v1.5.7)
 
 ---
 
@@ -118,6 +137,8 @@ npm run cli -- --csv .cache/export.csv
 - 快照字段：`period.today` / `period.last7` / `byDay` / `sources`
 - 按日历史：`.cache/daily.json`（约 90 天）
 
+> **v1.6.5+**：历史持久化至 `%APPDATA%/token-record/history.json`，不受本地会话文件清理影响，终身累计。
+
 ---
 
 ## 产品边界（明确不做）
@@ -141,7 +162,7 @@ npm test
 npm run cli
 ```
 
-测试覆盖：采集器、聚合去重、按日 period、价目覆盖、偏好、数据源健康检查。
+测试覆盖：采集器、聚合去重、按日 period、价目覆盖、偏好、数据源健康检查、历史持久化。
 
 ---
 
@@ -157,6 +178,9 @@ src/
 ├── main/         # Electron 主进程、托盘、偏好
 └── renderer/     # 悬浮窗 UI
 ```
+
+> **v1.6.0+** 后端已由 Rust 重写（Tauri v2），前端仍然 `src/renderer/`。
+> CLI 二进制 `trcli`（569KB）与 JS CLI 输出一致。
 
 ---
 
