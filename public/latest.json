@@ -1,11 +1,11 @@
 {
-  "version": "1.6.4",
-  "notes": "单位新增 B 档；修复隐藏/置顶/刷新按钮与更新检查反馈；折叠零延迟；移除状态栏冗余文案",
-  "pub_date": "2026-07-28T10:08:13Z",
+  "version": "1.6.5",
+  "notes": "总量终身累计：按日历史持久化，不再随各工具清理本地会话而缩水",
+  "pub_date": "2026-07-28T11:04:05Z",
   "platforms": {
     "windows-x86_64": {
-      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.4/Token._1.6.4_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXJLaCt5Y0tDUW9icVpISllGVlM4R3hUVCtuTXducjNVMkZIT09zcnpHR3NUL0FSZVdyU3djQ3NqUFU4d0drNHkwdWRzV0daMjIzaWRkYWhMdjlkMlFvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjMyOTg5CWZpbGU6VG9rZW7orrDlvZVfMS42LjRfeDY0LXNldHVwLmV4ZQpDNkxwM1NTeGY2WlpVVnlMTFU5bXI0TXdHZER0dTlQWVZrcmRNOGEvaWJJVlVqUURQeTAvODRUMHNmMGpNQ3F4VFcxZEZNeXFvaS81YUN5Y1ZVVEJCQT09Cg=="
+      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.5/Token._1.6.5_x64-setup.exe",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXRFckx2SUVxMlIwZHNjdWFDU0VRSGx2TS9pRHhNN04rSllBczNVOFFDdDZHT2hENXIyaHhqNEU4NVBHTmRkL280c1JjNjN6OVB0c1o0Yk5Vc3hUNXdzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjM2NDk1CWZpbGU6VG9rZW7orrDlvZVfMS42LjVfeDY0LXNldHVwLmV4ZQpQd0RYSmIybDV2SFVpRkRBTVBhVGVMSHRML3VzTXFtSmJScm80Wm1HN3pCNmtBQlowWm5CUUI1UCtLUkh4OGJ2ZEdheVZxeWVUbWZhWWNvaUk4QmVBZz09Cg=="
     }
   }
 }
