@@ -87,7 +87,29 @@ pub struct DayData {
     pub cost: f64,
     pub estimated: bool,
     #[serde(default)]
-    pub tools: HashMap<String, ToolTokens>,
+    pub tools: HashMap<String, DayToolStat>,
+}
+
+/// 单日单工具的用量与费用。既是快照 byDay 的子项，也是按日历史文件的持久化记录。
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct DayToolStat {
+    pub input: u64,
+    pub output: u64,
+    pub cache_write: u64,
+    pub cache_read: u64,
+    pub total: u64,
+    pub cost: f64,
+    #[serde(default)]
+    pub estimated: bool,
+}
+
+/// 按日历史文件中的一天：各工具记录 + 最后更新时间戳（毫秒）。
+#[derive(Debug, Clone, Serialize, Deserialize, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct HistoryDay {
+    pub tools: HashMap<String, DayToolStat>,
+    pub updated_at: i64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

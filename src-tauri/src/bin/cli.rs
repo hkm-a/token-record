@@ -5,9 +5,6 @@
 use std::path::PathBuf;
 use std::collections::HashMap;
 use token_record_lib::core::types::{Snapshot, DayData};
-use token_record_lib::core::collectors;
-use token_record_lib::core::sources;
-use token_record_lib::core::aggregator;
 
 fn fmt_num(n: u64) -> String {
     let s = n.to_string();
@@ -166,7 +163,7 @@ fn export_csv(path: &PathBuf, by_day: &HashMap<String, DayData>) {
                 row.push(td.output.to_string());
                 row.push(td.cache_write.to_string());
                 row.push(td.cache_read.to_string());
-                row.push("0".to_string());
+                row.push(format!("{:.4}", td.cost));
             } else {
                 for _ in 0..6 {
                     row.push("0".to_string());
@@ -202,16 +199,8 @@ fn parse_args() -> Option<PathBuf> {
 fn main() {
     let csv_path = parse_args();
 
-    // 采集
-    let mut events = Vec::new();
-    events.extend(collectors::collect_claude_events());
-    events.extend(collectors::collect_codex_events());
-    events.extend(collectors::collect_pi_events());
-    events.extend(collectors::collect_grok_events());
-
-    // 聚合
-    let mut snapshot = aggregator::aggregate(&events);
-    snapshot.sources = sources::probe_sources();
+    // 与 GUI 完全同一条链路：采集 → 聚合 → 按日历史合并（终身累计口径）
+    let snapshot = token_record_lib::refresh().snapshot;
 
     // 输出
     print_snapshot(&snapshot);

@@ -24,6 +24,8 @@ pub fn refresh() -> SnapshotOutput {
 
     let mut snapshot = aggregator::aggregate(&events);
     snapshot.sources = sources::probe_sources();
+    // 合并按日历史：总量终身累计，不随各工具清理本地会话文件而缩水
+    core::history::apply(&mut snapshot);
 
     // 计算 delta：与上一次快照对比
     let (is_first, delta) = {

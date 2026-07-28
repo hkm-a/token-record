@@ -223,3 +223,76 @@ fn test_jsonl_skip_empty_lines() {
     let result = jsonl::read_jsonl(&path);
     assert_eq!(result.len(), 2);
 }
+
+// ── 按日历史合并语义 ──
+
+fn day_tool(total: u64, cost: f64) -> token_record_lib::core::types::DayToolStat {
+    token_record_lib::core::types::DayToolStat {
+        input: total,
+        output: 0,
+        cache_write: 0,
+        cache_read: 0,
+        total,
+        cost,
+        estimated: false,
+    }
+}
+
+fn day_data(tool: &str, total: u64, cost: f64) -> token_record_lib::core::types::DayData {
+    let mut d = token_record_lib::core::types::DayData::default();
+    d.tools.insert(tool.to_string(), day_tool(total, cost));
+    d.total = total;
+    d.cost = cost;
+    d
+}
+
+#[test]
+fn test_history_merge_new_day_added() {
+    use token_record_lib::core::history;
+    let mut hist = history::History::new();
+    let by_day = HashMap::from([("2026-07-28".to_string(), day_data("claude", 100, 1.0))]);
+    history::merge(&mut hist, &by_day, 1000);
+    assert_eq!(hist["2026-07-28"].tools["claude"].total, 100);
+    assert_eq!(hist["2026-07-28"].updated_at, 1000);
+}
+
+#[test]
+fn test_history_merge_pruned_day_kept() {
+    use token_record_lib::core::history;
+    let mut hist = history::History::new();
+    let old = HashMap::from([("2026-06-01".to_string(), day_data("codex", 500, 5.0))]);
+    history::merge(&mut hist, &old, 1);
+    // 源清理后，当前扫描不再包含 2026-06-01
+    let now = HashMap::from([("2026-07-28".to_string(), day_data("codex", 100, 1.0))]);
+    history::merge(&mut hist, &now, 2);
+    assert_eq!(hist["2026-06-01"].tools["codex"].total, 500, "被源清理的天必须保留");
+    assert_eq!(hist["2026-07-28"].tools["codex"].total, 100);
+}
+
+#[test]
+fn test_history_merge_growth_replaces_shrink_keeps() {
+    use token_record_lib::core::history;
+    let mut hist = history::History::new();
+    let first = HashMap::from([("2026-07-28".to_string(), day_data("pi", 300, 3.0))]);
+    history::merge(&mut hist, &first, 1);
+    // 正常追加：磁盘值增大 → 覆盖
+    let grow = HashMap::from([("2026-07-28".to_string(), day_data("pi", 450, 4.5))]);
+    history::merge(&mut hist, &grow, 2);
+    assert_eq!(hist["2026-07-28"].tools["pi"].total, 450);
+    // 源被部分清理：磁盘值变小 → 保留较大已记录值
+    let shrink = HashMap::from([("2026-07-28".to_string(), day_data("pi", 50, 0.5))]);
+    history::merge(&mut hist, &shrink, 3);
+    assert_eq!(hist["2026-07-28"].tools["pi"].total, 450, "缩水的磁盘值不得覆盖历史");
+}
+
+#[test]
+fn test_history_merge_multi_tool_same_day() {
+    use token_record_lib::core::history;
+    let mut hist = history::History::new();
+    let a = HashMap::from([("2026-07-28".to_string(), day_data("claude", 100, 1.0))]);
+    history::merge(&mut hist, &a, 1);
+    let b = HashMap::from([("2026-07-28".to_string(), day_data("grok", 200, 2.0))]);
+    history::merge(&mut hist, &b, 2);
+    assert_eq!(hist["2026-07-28"].tools["claude"].total, 100);
+    assert_eq!(hist["2026-07-28"].tools["grok"].total, 200);
+}

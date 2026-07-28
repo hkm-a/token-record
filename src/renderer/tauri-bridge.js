@@ -75,7 +75,7 @@
     refreshNow: () => { feed(); },
 
     togglePin: (pinned) => { appWindow.setAlwaysOnTop(pinned); },
-    setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.4', open_at_login: false } }); },
+    setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.5', open_at_login: false } }); },
 
     // 窗口高度贴合内容。约束：
     // - 必须传 LogicalSize 实例——普通对象会被序列化成 {"undefined":…}，

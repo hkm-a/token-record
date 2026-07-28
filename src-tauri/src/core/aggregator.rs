@@ -92,12 +92,20 @@ pub fn aggregate(events: &[TokenEvent]) -> Snapshot {
             day_entry.estimated = true;
         }
 
-        // 按天的工具子分组
+        // 按天的工具子分组（含费用，供按日历史持久化与 CSV 导出）
         let day_tool = day_entry
             .tools
             .entry(event.tool.clone())
-            .or_insert_with(ToolTokens::default);
-        add_to_tokens(day_tool, event);
+            .or_insert_with(DayToolStat::default);
+        day_tool.input += event.input;
+        day_tool.output += event.output;
+        day_tool.cache_write += event.cache_write;
+        day_tool.cache_read += event.cache_read;
+        day_tool.total = day_tool.input + day_tool.output + day_tool.cache_write + day_tool.cache_read;
+        day_tool.cost += event.cost;
+        if event.estimated {
+            day_tool.estimated = true;
+        }
 
         // Grand total
         add_to_tokens(&mut grand.tokens, event);
@@ -145,8 +153,8 @@ impl ToolTokens {
     }
 }
 
-/// 构建周期统计
-fn build_period(
+/// 构建周期统计（今日 / 近 7 日）。历史合并后需要重建，故公开。
+pub fn build_period(
     by_day: &HashMap<String, DayData>,
     today_key: &str,
 ) -> PeriodData {

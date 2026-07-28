@@ -1,7 +1,8 @@
 use super::core::types::Preferences;
 use std::path::PathBuf;
 
-fn config_dir() -> PathBuf {
+/// 配置目录（prefs.json 与 history.json 共用）
+pub fn config_dir() -> PathBuf {
     let base = dirs::config_dir().unwrap_or_else(|| {
         let home = dirs::home_dir().unwrap_or_else(|| std::path::PathBuf::from("."));
         home.join(".config")

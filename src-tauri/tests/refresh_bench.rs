@@ -12,5 +12,7 @@ fn refresh_cache_consistency() {
     let warm = t1.elapsed();
     println!("cold={:?} warm={:?}", cold, warm);
     assert_eq!(a.snapshot.grand.total, b.snapshot.grand.total, "缓存前后聚合结果必须一致");
-    assert_eq!(a.snapshot.grand.cost, b.snapshot.grand.cost, "缓存前后费用聚合必须一致");
+    // 费用为浮点数按 HashMap 迭代序累加，顺序不定带来末位抖动，用容差比较
+    let diff = (a.snapshot.grand.cost - b.snapshot.grand.cost).abs();
+    assert!(diff < 1e-6, "缓存前后费用聚合必须一致（diff={}）", diff);
 }
