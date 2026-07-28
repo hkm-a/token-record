@@ -67,22 +67,24 @@
     setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.2', open_at_login: false } }); },
 
     fitContent: () => {
-      // 测量实际内容高度并调整窗口
-      // 先放开最小尺寸约束，允许窗口缩小（Windows DWM 透明窗口需此步）
-      appWindow.setMinSize({ width: 200, height: 50 }).catch(() => {});
-      setTimeout(() => {
+      // 测量并调整窗口至内容高度
+      // Windows 透明窗口缩小后 hit-test 区域不更新是关键难题
+      setTimeout(async () => {
         const h = document.body.scrollHeight;
-        if (h > 60) {
-          const targetH = h + 8;
-          // Windows 透明窗口缩小后 hit-test 区域可能不更新，
-          // 两步设尺寸强制 DWM 刷新窗口可见区域
-          const interim = Math.max(60, targetH - 20);
-          appWindow
-            .setSize({ width: 420, height: interim })
-            .then(() => appWindow.setSize({ width: 420, height: targetH }))
-            .catch(() => {});
-        }
-      }, 80);
+        if (h <= 60) return;
+        const targetH = h + 8;
+        try {
+          // 先放开最小尺寸 + 临时允许调整大小，强制 DWM 刷新窗口区域
+          await appWindow.setResizable(true);
+          await appWindow.setMinSize({ width: 200, height: 50 });
+          // 设置目标尺寸
+          await appWindow.setSize({ width: 420, height: targetH });
+          // 恢复不可调大小
+          await appWindow.setResizable(false);
+          // 设置新的最小尺寸
+          await appWindow.setMinSize({ width: 200, height: targetH });
+        } catch (_) {}
+      }, 100);
     },
 
     getVersion: () => invoke('get_version'),

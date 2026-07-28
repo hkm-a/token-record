@@ -288,24 +288,33 @@ function bindControls() {
   });
 
 
-  // 窗口拖拽：使用 Tauri startDragging 替代 -webkit-app-region（后者会吞 pointerdown）
-  let dragging = false;
+  // 窗口拖拽检测：CSS -webkit-app-region 负责实际拖拽，JS 负责性能优化
+  let dragTimer = null;
   const titlebar = document.querySelector('.titlebar');
-  if (titlebar && window.api && window.api.startDrag) {
+  if (titlebar) {
     titlebar.addEventListener('pointerdown', (e) => {
-      // 排除按钮区域（win-controls 里的按钮不能触发拖拽）
       if (e.target.closest('.win-controls')) return;
-      if (dragging) return;
-      dragging = true;
       document.body.classList.add('dragging');
-      // Promise 在 OS 拖拽循环结束时 resolve
-      window.api.startDrag().finally(() => {
-        dragging = false;
+      // 兜底 3 秒后自动恢复（防止 pointerup 因 OS 拖拽未送达）
+      if (dragTimer) clearTimeout(dragTimer);
+      dragTimer = setTimeout(() => {
         document.body.classList.remove('dragging');
+        dragTimer = null;
         if (window.api && window.api.refreshNow) window.api.refreshNow();
-      });
+      }, 3000);
     });
   }
+  // pointerup 一定在下次点击时触发（即使在 OS 拖拽结束后）
+  document.addEventListener('pointerup', () => {
+    if (!document.body.classList.contains('dragging')) return;
+    document.body.classList.remove('dragging');
+    if (dragTimer) {
+      clearTimeout(dragTimer);
+      dragTimer = null;
+    }
+    if (window.api && window.api.refreshNow) window.api.refreshNow();
+  });
+  // 注意：不要监听 pointerleave，拖拽时鼠标离开窗口会误移除
 }
 buildCards();
 bindControls();
