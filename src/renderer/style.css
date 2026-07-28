@@ -89,7 +89,7 @@ body.dragging .app-version.has-update {
 
 /* 标题栏：压矮 */
 .titlebar {
-  -webkit-app-region: drag;
+  /* 改用 JS startDragging，见 bindControls */
   display: flex;
   align-items: center;
   justify-content: space-between;

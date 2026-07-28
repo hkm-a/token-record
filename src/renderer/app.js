@@ -287,32 +287,25 @@ function bindControls() {
     if (!muted) playCashRegister();
   });
 
-  // 窗口拖拽时禁用 backdrop-filter 避免卡顿
-  let dragTimer = null;
+
+  // 窗口拖拽：使用 Tauri startDragging 替代 -webkit-app-region（后者会吞 pointerdown）
+  let dragging = false;
   const titlebar = document.querySelector('.titlebar');
-  if (titlebar) {
-    titlebar.addEventListener('pointerdown', () => {
+  if (titlebar && window.api && window.api.startDrag) {
+    titlebar.addEventListener('pointerdown', (e) => {
+      // 排除按钮区域（win-controls 里的按钮不能触发拖拽）
+      if (e.target.closest('.win-controls')) return;
+      if (dragging) return;
+      dragging = true;
       document.body.classList.add('dragging');
-      // 兜底：OS 拖拽可能拦截 pointerup，3 秒后自动恢复
-      if (dragTimer) clearTimeout(dragTimer);
-      dragTimer = setTimeout(() => {
+      // Promise 在 OS 拖拽循环结束时 resolve
+      window.api.startDrag().finally(() => {
+        dragging = false;
         document.body.classList.remove('dragging');
-        dragTimer = null;
-      }, 3000);
+        if (window.api && window.api.refreshNow) window.api.refreshNow();
+      });
     });
   }
-  const endDrag = () => {
-    document.body.classList.remove('dragging');
-    // 拖拽结束立即刷新数据，补回暂停期间的遗漏
-    if (window.api && window.api.refreshNow) window.api.refreshNow();
-    if (dragTimer) {
-      clearTimeout(dragTimer);
-      dragTimer = null;
-    }
-  };
-  document.addEventListener('pointerup', endDrag);
-  document.addEventListener('pointerleave', endDrag);
-
 }
 buildCards();
 bindControls();

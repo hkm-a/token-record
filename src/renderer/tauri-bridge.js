@@ -60,6 +60,10 @@
     },
 
     togglePin: (pinned) => { appWindow.setAlwaysOnTop(pinned); },
+    startDrag: () => {
+      // 返回 Promise，在 OS 拖拽循环结束时 resolve
+      return appWindow.startDragging().catch(() => {});
+    },
     setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.2', open_at_login: false } }); },
 
     fitContent: () => {
