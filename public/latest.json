@@ -1,11 +1,11 @@
 {
-  "version": "1.6.2",
-  "notes": "修复拖拽卡顿 & 折叠死区",
-  "pub_date": "2026-07-28T06:01:17Z",
+  "version": "1.6.3",
+  "notes": "根治拖拽卡顿与折叠死区：快照刷新移出主线程 + 文件解析缓存；修复 setSize 传参与 SWP_NOSIZE 缺失导致的窗口异常",
+  "pub_date": "2026-07-28T08:54:29Z",
   "platforms": {
     "windows-x86_64": {
-      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.2/Token._1.6.2_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaWdRRHkyT2k3WUFzc3lhelN6azBnWFFzWnM5RExZeFFHSERjRnRLc01QVUxRbWR5YjZqTVhldUxHTFNyMFRrYWNMZllqekRHbGdNVEJiM2pLRTRHL0F3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjE4NDc3CWZpbGU6VG9rZW7orrDlvZVfMS42LjJfeDY0LXNldHVwLmV4ZQp2VDY0dnhEeDVJbjFhUVJ6UWxEbFZtS0xtdXhVaFhsMDRVMmQxZlhGVFdOTGY5SHp0T1QxTUVnaldJZkJOUmVscDBXWVNES3YzUXAyOXlmRTBIMVBCUT09Cg=="
+      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.3/Token._1.6.3_x64-setup.exe",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXFZcis3UWozVCtRbisyNkZ0bVVJbDdPSDZLNFBpNERnLytNaXpRK2NBNUR4Z2xtZ0RoZ1dvUTJmc0dSRnRJRkZPalNtTXBnV3VvRFFQcmFMaFVhaVE4PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjI4MjgzCWZpbGU6VG9rZW7orrDlvZVfMS42LjNfeDY0LXNldHVwLmV4ZQp4Z2x6U2VEVXErSVFhT1hZME9veE52ZE9tY2cxN0pIai9VdHd4WVVUUk96bjRlOG95WnRIclpsSFR1REE2YWcvcGNld3hLT2NYWFZMQklmK1EzcTJDUT09Cg=="
     }
   }
 }
