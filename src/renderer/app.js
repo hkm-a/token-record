@@ -288,7 +288,8 @@ function bindControls() {
   });
 
 
-  // 窗口拖拽检测：CSS -webkit-app-region 负责实际拖拽，JS 负责性能优化
+  // 窗口拖拽：data-tauri-drag-region（Tauri 内置）处理实际拖拽
+  // pointerdown 在此先于 Tauri 的 mousedown 触发，设 dragging 类以暂停轮询 & 动画
   // 同时调用 set_window_blur 临时禁用 DWM blur behind，消除透明合成卡顿
   let dragTimer = null;
   const titlebar = document.querySelector('.titlebar');

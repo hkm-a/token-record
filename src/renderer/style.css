@@ -89,7 +89,7 @@ body.dragging .app-version.has-update {
 
 /* 标题栏：压矮 */
 .titlebar {
-  -webkit-app-region: drag;
+  /* Tauri 内置 data-tauri-drag-region 处理拖拽，无需 -webkit-app-region */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -118,7 +118,7 @@ body.dragging .app-version.has-update {
 }
 
 .win-controls {
-  -webkit-app-region: no-drag;
+  /* Tauri 内置 drag 系统会自动跳过按钮，无需 no-drag */
   display: flex;
   gap: 4px;
 }
