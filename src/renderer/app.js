@@ -289,22 +289,18 @@ function bindControls() {
 
 
   // 窗口拖拽：data-tauri-drag-region（Tauri 内置）处理实际拖拽
-  // pointerdown 在此先于 Tauri 的 mousedown 触发，设 dragging 类以暂停轮询 & 动画
-  // 同时调用 set_window_blur 临时禁用 DWM blur behind，消除透明合成卡顿
+  // pointerdown 设 dragging 类以暂停轮询 & 动画
   let dragTimer = null;
   const titlebar = document.querySelector('.titlebar');
   if (titlebar) {
     titlebar.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.win-controls')) return;
       document.body.classList.add('dragging');
-      // 禁用 DWM blur behind，窗口变不透明，DWM 走普通合成路径
-      if (window.api && window.api.setBlur) window.api.setBlur(false);
       // 兜底 3 秒后自动恢复
       if (dragTimer) clearTimeout(dragTimer);
       dragTimer = setTimeout(() => {
         document.body.classList.remove('dragging');
         dragTimer = null;
-        if (window.api && window.api.setBlur) window.api.setBlur(true);
         if (window.api && window.api.refreshNow) window.api.refreshNow();
       }, 3000);
     });
@@ -316,8 +312,6 @@ function bindControls() {
       clearTimeout(dragTimer);
       dragTimer = null;
     }
-    // 恢复 DWM blur behind
-    if (window.api && window.api.setBlur) window.api.setBlur(true);
     if (window.api && window.api.refreshNow) window.api.refreshNow();
   });
   // 注意：不要监听 pointerleave，拖拽时鼠标离开窗口会误移除

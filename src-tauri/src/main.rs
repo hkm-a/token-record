@@ -53,41 +53,6 @@ fn force_window_resize(window: tauri::Window) {
 #[tauri::command]
 fn force_window_resize(_window: tauri::Window) {}
 
-#[cfg(windows)]
-#[tauri::command]
-fn set_window_blur(window: tauri::Window, enabled: bool) {
-    if let Ok(hwnd) = window.hwnd() {
-        use windows::Win32::Graphics::Dwm::{
-            DwmEnableBlurBehindWindow, DWM_BLURBEHIND
-        };
-        use windows::Win32::Graphics::Gdi::{HRGN, CreateRectRgn};
-        unsafe {
-            if enabled {
-                // 重建与 tao 初始创建时一致的 blur region（覆盖全窗口）
-                let region = CreateRectRgn(0, 0, -1, -1);
-                let bb = DWM_BLURBEHIND {
-                    dwFlags: 1u32 | 2u32, // DWM_BB_ENABLE | DWM_BB_BLURREGION
-                    fEnable: true.into(),
-                    hRgnBlur: region,
-                    fTransitionOnMaximized: false.into(),
-                };
-                let _ = DwmEnableBlurBehindWindow(hwnd, &bb);
-            } else {
-                let bb = DWM_BLURBEHIND {
-                    dwFlags: 1u32, // DWM_BB_ENABLE
-                    fEnable: false.into(),
-                    hRgnBlur: HRGN::default(),
-                    fTransitionOnMaximized: false.into(),
-                };
-                let _ = DwmEnableBlurBehindWindow(hwnd, &bb);
-            }
-        }
-    }
-}
-
-#[cfg(not(windows))]
-#[tauri::command]
-fn set_window_blur(_window: tauri::Window, _enabled: bool) {}
 
 #[tauri::command]
 async fn check_update(app: AppHandle) -> Result<(), String> {
@@ -224,7 +189,6 @@ fn main() {
             get_version,
             quit_app,
             force_window_resize,
-            set_window_blur,
             check_update,
             apply_update,
         ])

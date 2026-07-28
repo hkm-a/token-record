@@ -64,28 +64,17 @@
 
     fitContent: () => {
       // 测量并调整窗口至内容高度
-      // Windows 透明窗口缩小后 DWM hit-test 区域不更新：
-      // 根本原因是 DwmEnableBlurBehindWindow 创建的 blur region
-      // 在窗口缩小后没有被 DWM 重算。
-      // 解法：临时拆卸 blur → 设尺寸(SWP_FRAMECHANGED) → 重建 blur
       setTimeout(async () => {
         const h = document.body.scrollHeight;
         if (h <= 60) return;
         const targetH = h + 8;
         try {
-          // 1. 拆卸 DWM blur，释放旧 blur region
-          await invoke('set_window_blur', { enabled: false });
-          // 2. 调整窗口
           await appWindow.setResizable(true);
           await appWindow.setMinSize({ width: 200, height: 50 });
           await appWindow.setSize({ width: 420, height: targetH });
-          // 3. 强制 DWM 刷新窗口区域（SWP_FRAMECHANGED）
+          // 强制 DWM 刷新窗口区域
           await invoke('force_window_resize');
           await appWindow.setResizable(false);
-          // 4. 等待一小段时间让 DWM 完成更新
-          await new Promise(r => setTimeout(r, 50));
-          // 5. 重建 blur region（新的 region 匹配新窗口尺寸）
-          await invoke('set_window_blur', { enabled: true });
         } catch (_) {}
       }, 100);
     },
@@ -93,7 +82,6 @@
     getVersion: () => invoke('get_version'),
     getPrefs: () => invoke('get_prefs'),
 
-    setBlur: (enabled) => { invoke('set_window_blur', { enabled }); },
     startUpdate: () => {
       invoke('check_update')
         .catch((e) => console.warn('[tr] check_update failed:', e));
