@@ -286,6 +286,31 @@ function bindControls() {
     refreshMute();
     if (!muted) playCashRegister();
   });
+
+  // 窗口拖拽时禁用 backdrop-filter 避免卡顿
+  let dragTimer = null;
+  const titlebar = document.querySelector('.titlebar');
+  if (titlebar) {
+    titlebar.addEventListener('pointerdown', () => {
+      document.body.classList.add('dragging');
+      // 兜底：OS 拖拽可能拦截 pointerup，3 秒后自动恢复
+      if (dragTimer) clearTimeout(dragTimer);
+      dragTimer = setTimeout(() => {
+        document.body.classList.remove('dragging');
+        dragTimer = null;
+      }, 3000);
+    });
+  }
+  const endDrag = () => {
+    document.body.classList.remove('dragging');
+    if (dragTimer) {
+      clearTimeout(dragTimer);
+      dragTimer = null;
+    }
+  };
+  document.addEventListener('pointerup', endDrag);
+  document.addEventListener('pointerleave', endDrag);
+
 }
 buildCards();
 bindControls();

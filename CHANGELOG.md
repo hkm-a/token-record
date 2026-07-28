@@ -1,7 +1,20 @@
 # 变更记录
 
-## 1.6.1 — 2026-07-28
+## 1.6.2 — 2026-07-28
 
+### 修复
+
+- **拖拽卡顿**：`backdrop-filter` 从 blur(28px) 降为 blur(8px)，拖拽期间自动禁用滤镜，
+  添加 `will-change: transform` GPU 加速
+- **折叠死区**：折叠后窗口下方区域无法点击的问题，通过 `setMinSize` + 两步 resize
+  强制 Windows DWM 刷新窗口可见区域
+- **性能**：日常 backdrop-filter 强度降低 70%（28→8px），减少帧率开销
+
+### 变更
+
+- 版本 1.6.1 → 1.6.2
+
+## 1.6.1 — 2026-07-28
 ### 安全与健壮性
 
 - **CSP 策略**：从 null（无限制）改为 restrictive CSP，限制 script/style/connect 来源

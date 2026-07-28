@@ -57,17 +57,25 @@
     },
 
     togglePin: (pinned) => { appWindow.setAlwaysOnTop(pinned); },
-    setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.1', open_at_login: false } }); },
+    setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.2', open_at_login: false } }); },
 
     fitContent: () => {
-      // 测量实际内容高度并调整窗口（Tauri v2 setSize）
-      // 用 setTimeout 等待卡片渲染完成后再测量
+      // 测量实际内容高度并调整窗口
+      // 先放开最小尺寸约束，允许窗口缩小（Windows DWM 透明窗口需此步）
+      appWindow.setMinSize({ width: 200, height: 50 }).catch(() => {});
       setTimeout(() => {
         const h = document.body.scrollHeight;
-        if (h > 100) {
-          appWindow.setSize({ width: 420, height: h + 8 }).catch(() => {});
+        if (h > 60) {
+          const targetH = h + 8;
+          // Windows 透明窗口缩小后 hit-test 区域可能不更新，
+          // 两步设尺寸强制 DWM 刷新窗口可见区域
+          const interim = Math.max(60, targetH - 20);
+          appWindow
+            .setSize({ width: 420, height: interim })
+            .then(() => appWindow.setSize({ width: 420, height: targetH }))
+            .catch(() => {});
         }
-      }, 50);
+      }, 80);
     },
 
     getVersion: () => invoke('get_version'),

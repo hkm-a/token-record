@@ -25,7 +25,7 @@ fn save_prefs(prefs: Preferences) {
 
 #[tauri::command]
 fn get_version() -> String {
-    "1.6.1".to_string()
+    "1.6.2".to_string()
 }
 
 

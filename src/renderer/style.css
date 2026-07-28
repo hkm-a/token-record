@@ -31,14 +31,17 @@ body {
 #app {
   position: relative;
   width: 100%;
-  height: auto; /* 不拉满窗口，避免卡片与状态栏之间空洞 */
+  height: auto;
   display: flex;
   flex-direction: column;
   border-radius: 18px;
   overflow: hidden;
   background: linear-gradient(160deg, rgba(30, 32, 46, 0.9), rgba(15, 16, 23, 0.95));
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
+  /* backdrop-filter is performance-heavy and causes drag stutter;
+     toggled to 'none' during window drag via body.dragging */
+  backdrop-filter: blur(8px) saturate(120%);
+  -webkit-backdrop-filter: blur(8px) saturate(120%);
+  will-change: transform;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
@@ -61,6 +64,13 @@ body {
   position: relative;
   z-index: 1;
 }
+
+/* 拖拽时禁用高开销 backdrop-filter，避免卡顿 */
+body.dragging #app {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
 
 /* 标题栏：压矮 */
 .titlebar {
