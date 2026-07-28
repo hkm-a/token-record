@@ -303,6 +303,8 @@ function bindControls() {
   }
   const endDrag = () => {
     document.body.classList.remove('dragging');
+    // 拖拽结束立即刷新数据，补回暂停期间的遗漏
+    if (window.api && window.api.refreshNow) window.api.refreshNow();
     if (dragTimer) {
       clearTimeout(dragTimer);
       dragTimer = null;

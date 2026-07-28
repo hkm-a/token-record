@@ -15,7 +15,9 @@
   window.api = {
 
     onSnapshot: (callback) => {
-      const feed = () =>
+      const feed = () => {
+        // 拖拽期间暂停轮询，避免 IPC + DOM 更新导致卡顿
+        if (document.body.classList.contains('dragging')) return;
         invoke('get_snapshot')
           .then((data) => {
             if (lastSnapshot && data.snapshot.generatedAt === lastSnapshot.snapshot.generatedAt) return;
@@ -26,6 +28,7 @@
             callback(data);
           })
           .catch((e) => console.warn('[tr] snapshot:', e));
+      };
       feed();
       const id = setInterval(feed, 2000);
       listen('refresh-now', () => feed());
