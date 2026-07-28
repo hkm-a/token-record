@@ -22,9 +22,10 @@ fn get_prefs() -> Preferences {
     config::load_prefs()
 }
 
+/// 偏好写盘走阻塞线程池，避免折叠/展开点击时在主线程做文件 IO
 #[tauri::command]
-fn save_prefs(prefs: Preferences) {
-    config::save_prefs(&prefs);
+async fn save_prefs(prefs: Preferences) {
+    let _ = tauri::async_runtime::spawn_blocking(move || config::save_prefs(&prefs)).await;
 }
 
 #[tauri::command]
@@ -61,8 +62,10 @@ fn force_window_resize(window: tauri::Window) {
 fn force_window_resize(_window: tauri::Window) {}
 
 
+/// 检查更新。有更新时发出 update-available 事件并返回最新版本号；
+/// 无更新返回 None——前端据此给出"已是最新"反馈，避免"检查中"状态卡死。
 #[tauri::command]
-async fn check_update(app: AppHandle) -> Result<(), String> {
+async fn check_update(app: AppHandle) -> Result<Option<String>, String> {
     let updater = app.updater().map_err(|e| e.to_string())?;
     let response = updater.check().await.map_err(|e| e.to_string())?;
     if let Some(update) = response {
@@ -70,8 +73,9 @@ async fn check_update(app: AppHandle) -> Result<(), String> {
         let _ = app.emit("update-available", serde_json::json!({
             "latestVersion": latest,
         }));
+        return Ok(Some(latest));
     }
-    Ok(())
+    Ok(None)
 }
 
 #[tauri::command]

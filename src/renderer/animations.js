@@ -70,9 +70,15 @@ function pulse(el) {
   el.classList.add('pulse');
 }
 
-// 数字格式化：紧凑写法（1.23M / 12.3K），适配悬浮小窗。
+// 数字格式化：紧凑写法（1.23B / 123M / 12.3K），适配悬浮小窗。
+// 每档按数量级递减小数位，保持约 4 位有效字符宽度。
 function formatCompact(n) {
   const v = Math.max(0, n);
+  if (v >= 1e11) return (v / 1e9).toFixed(0) + 'B';
+  if (v >= 1e10) return (v / 1e9).toFixed(1) + 'B';
+  if (v >= 1e9) return (v / 1e9).toFixed(2) + 'B';
+  if (v >= 1e8) return (v / 1e6).toFixed(0) + 'M';
+  if (v >= 1e7) return (v / 1e6).toFixed(1) + 'M';
   if (v >= 1e6) return (v / 1e6).toFixed(2) + 'M';
   if (v >= 1e4) return (v / 1e3).toFixed(1) + 'K';
   if (v >= 1e3) return (v / 1e3).toFixed(2) + 'K';

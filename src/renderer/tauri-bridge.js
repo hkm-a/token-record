@@ -72,16 +72,10 @@
     hide: () => { appWindow.hide(); },
     quit: () => { invoke('quit_app'); },
 
-    refreshNow: () => {
-      invoke('get_snapshot')
-        .then((data) => {
-          lastSnapshot = data;
-        })
-        .catch(console.warn);
-    },
+    refreshNow: () => { feed(); },
 
     togglePin: (pinned) => { appWindow.setAlwaysOnTop(pinned); },
-    setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.3', open_at_login: false } }); },
+    setCompact: (compact) => { invoke('save_prefs', { prefs: { compact, version: '1.6.4', open_at_login: false } }); },
 
     // 窗口高度贴合内容。约束：
     // - 必须传 LogicalSize 实例——普通对象会被序列化成 {"undefined":…}，
@@ -91,22 +85,22 @@
     //   （setResizable/setMinSize/setSize/setMaxSize…）造成周期性卡顿，
     //   且展开时被上次残留的 maxSize 钳制。窗口保持 resizable:false，
     //   程序化 setSize 不受该状态限制，无需任何 min/max 锁定。
-    fitContent: () => {
-      setTimeout(async () => {
-        if (document.body.classList.contains('dragging')) return;
-        const h = document.body.scrollHeight;
-        if (h <= 60) return; // 布局尚未就绪，跳过
-        const targetH = h + 8;
-        if (Math.abs(targetH - lastFitH) <= 1) return;
-        lastFitH = targetH; // 先记账，避免相邻两次调用重复 resize
-        try {
-          await appWindow.setSize(new LogicalSize(420, targetH));
-          await invoke('force_window_resize');
-        } catch (e) {
-          lastFitH = 0; // 失败允许下次重试
-          console.warn('[tr] fitContent:', e);
-        }
-      }, 100);
+    // - 立即执行：读 scrollHeight 自带强制同步布局，任何延时都会
+    //   变成折叠/展开时可感知的窗口滞后。
+    fitContent: async () => {
+      if (document.body.classList.contains('dragging')) return;
+      const h = document.body.scrollHeight;
+      if (h <= 60) return; // 布局尚未就绪，跳过
+      const targetH = h + 8;
+      if (Math.abs(targetH - lastFitH) <= 1) return;
+      lastFitH = targetH; // 先记账，避免相邻两次调用重复 resize
+      try {
+        await appWindow.setSize(new LogicalSize(420, targetH));
+        await invoke('force_window_resize');
+      } catch (e) {
+        lastFitH = 0; // 失败允许下次重试
+        console.warn('[tr] fitContent:', e);
+      }
     },
 
     getVersion: () => invoke('get_version'),
@@ -115,10 +109,9 @@
     startPolling,
     stopPolling,
 
-    startUpdate: () => {
-      invoke('check_update')
-        .catch((e) => console.warn('[tr] check_update failed:', e));
-    },
+    // 检查更新：返回 Promise<string|null>（有更新时返回最新版本号并同时
+    // 触发 update-available 事件；无更新返回 null；失败时 reject）
+    startUpdate: () => invoke('check_update'),
     applyUpdate: () => { invoke('apply_update'); },
   };
 })();

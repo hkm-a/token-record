@@ -516,10 +516,6 @@ body.dragging .app-version.has-update {
   flex: 1;
 }
 
-#estimateNote {
-  color: #b89a5e;
-}
-
 .live-dot {
   width: 6px;
   height: 6px;

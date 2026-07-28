@@ -77,7 +77,6 @@ function buildCards() {
   refs.grandCostSub = document.getElementById('grandCostSub');
   refs.periodBars = document.getElementById('periodBars');
   refs.updatedAt = document.getElementById('updatedAt');
-  refs.estimateNote = document.getElementById('estimateNote');
 }
 
 function handleData(payload) {
@@ -149,18 +148,10 @@ function handleData(payload) {
     second: '2-digit',
   });
   refs.updatedAt.textContent = time;
-  const notes = [];
-  if (snapshot.grand.estimated) notes.push('估算');
-  if (snapshot.sources && snapshot.sources.allQuiet) notes.push('无会话');
-  else if (snapshot.sources && snapshot.sources.missing > 0) notes.push('源缺失');
-  else if (snapshot.sources && snapshot.sources.errors > 0) notes.push('源异常');
-  refs.estimateNote.textContent = notes.join(' · ');
 
   if (anyIncrease && !muted && document.visibilityState !== 'hidden') playCashRegister();
-  // 内容高度可能变化：下一帧请求主进程收紧窗口
-  requestAnimationFrame(() => {
-    if (window.api && window.api.fitContent) window.api.fitContent();
-  });
+  // 内容高度可能变化：立即收紧窗口（读 scrollHeight 会强制同步布局，无需等下一帧）
+  if (window.api && window.api.fitContent) window.api.fitContent();
 }
 
 function updateEmptyBanner(snapshot) {
@@ -243,10 +234,8 @@ function bindControls() {
   btnMin.addEventListener('click', () => {
     applyCompactUi(!compact);
     window.api.setCompact(compact);
-    // 折叠后只剩两大指标，下一帧收紧窗口
-    requestAnimationFrame(() => {
-      if (window.api && window.api.fitContent) window.api.fitContent();
-    });
+    // 类切换后立即收紧窗口：scrollHeight 读取自带同步布局，延时只会造成可感知卡顿
+    if (window.api && window.api.fitContent) window.api.fitContent();
   });
   if (window.api.onPrefs) {
     window.api.onPrefs((p) => {
@@ -334,19 +323,21 @@ window.api.onSnapshot(handleData);
 
 // 启动后 10 秒自动检查更新（点击版本号可随时手动触发）
 setTimeout(() => {
-  if (window.api && window.api.startUpdate) window.api.startUpdate();
+  if (window.api && window.api.startUpdate) {
+    window.api.startUpdate().catch((e) => console.warn('[tr] 自动检查更新失败:', e));
+  }
 }, 10000);
 
 // ─── 更新指示器 ─────────────────────────────────
 
 let updateInfo = null;
-let updateState = 'idle'; // idle | available | downloading | ready
+let updateState = 'idle'; // idle | checking | available | downloading | ready
 const versionEl = document.getElementById('appVersion');
 
 window.api.onUpdateAvailable((info) => {
   updateInfo = info;
   // 只要还没开始下载/重启，就显示金色可点击
-  if (updateState === 'idle' || updateState === 'available') {
+  if (updateState === 'idle' || updateState === 'checking' || updateState === 'available') {
     updateState = 'available';
     versionEl.classList.add('has-update');
     versionEl.title = `点击更新至 v${info.latestVersion}`;
@@ -369,7 +360,7 @@ window.api.onUpdateProgress((data) => {
   }
 });
 
-versionEl.addEventListener('click', () => {
+versionEl.addEventListener('click', async () => {
   if (updateState === 'ready') {
     // 已下载完成，点击重启
     if (window.api.applyUpdate) window.api.applyUpdate();
@@ -377,15 +368,34 @@ versionEl.addEventListener('click', () => {
   }
   if (updateState === 'downloading') return; // 下载中，无视第二次点击
 
-  // 点击版本号 = 手动触发检查更新
-  if (!updateInfo) {
-    // 尚无更新信息 → 触发首次检查
-    updateState = 'available';
-    versionEl.title = '检查中…';
-    if (window.api.startUpdate) window.api.startUpdate();
+  if (updateInfo) {
+    // 已有更新信息 → 开始下载（进度由 update-download-progress 事件驱动）
+    if (window.api.applyUpdate) window.api.applyUpdate();
     return;
   }
 
-  // 已有更新信息 → 开始下载
-  if (window.api.applyUpdate) window.api.applyUpdate();
+  // 尚无更新信息 → 手动触发检查；有更新时由 update-available 事件切换 UI
+  if (updateState === 'checking' || !window.api.startUpdate) return;
+  updateState = 'checking';
+  const restore = versionEl.textContent;
+  versionEl.title = '检查中…';
+  try {
+    const latest = await window.api.startUpdate();
+    if (updateState !== 'checking') return; // 事件已接管（available）
+    updateState = 'idle';
+    if (!latest) {
+      versionEl.title = '已是最新版本';
+      versionEl.textContent = '已最新';
+      setTimeout(() => {
+        if (updateState === 'idle') versionEl.textContent = restore;
+      }, 2000);
+    }
+  } catch (e) {
+    updateState = 'idle';
+    versionEl.title = '检查失败：' + e;
+    versionEl.textContent = '检查失败';
+    setTimeout(() => {
+      if (updateState === 'idle') versionEl.textContent = restore;
+    }, 2500);
+  }
 });
