@@ -68,21 +68,17 @@
 
     fitContent: () => {
       // 测量并调整窗口至内容高度
-      // Windows 透明窗口缩小后 hit-test 区域不更新是关键难题
+      // 核心难题：Windows 透明窗口缩小后 hit-test 区域不更新
+      // 解法：临时 setResizable(true) 强制 DWM 刷新窗口区域
       setTimeout(async () => {
         const h = document.body.scrollHeight;
         if (h <= 60) return;
         const targetH = h + 8;
         try {
-          // 先放开最小尺寸 + 临时允许调整大小，强制 DWM 刷新窗口区域
           await appWindow.setResizable(true);
           await appWindow.setMinSize({ width: 200, height: 50 });
-          // 设置目标尺寸
           await appWindow.setSize({ width: 420, height: targetH });
-          // 恢复不可调大小
           await appWindow.setResizable(false);
-          // 设置新的最小尺寸
-          await appWindow.setMinSize({ width: 200, height: targetH });
         } catch (_) {}
       }, 100);
     },
