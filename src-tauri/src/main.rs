@@ -55,30 +55,39 @@ fn force_window_resize(_window: tauri::Window) {}
 
 #[cfg(windows)]
 #[tauri::command]
-fn set_window_layered(window: tauri::Window, layered: bool) {
+fn set_window_blur(window: tauri::Window, enabled: bool) {
     if let Ok(hwnd) = window.hwnd() {
-        use windows::Win32::UI::WindowsAndMessaging::{
-            GetWindowLongW, SetWindowLongW, GWL_EXSTYLE,
-            WS_EX_LAYERED, WS_EX_TRANSPARENT,
-            SetWindowPos, SWP_NOMOVE, SWP_NOSIZE, SWP_NOZORDER, SWP_FRAMECHANGED
+        use windows::Win32::Graphics::Dwm::{
+            DwmEnableBlurBehindWindow, DWM_BLURBEHIND
         };
+        use windows::Win32::Graphics::Gdi::{HRGN, CreateRectRgn};
         unsafe {
-            let style = GetWindowLongW(hwnd, GWL_EXSTYLE);
-            let new_style = if layered {
-                style | (WS_EX_LAYERED.0 as i32) | (WS_EX_TRANSPARENT.0 as i32)
+            if enabled {
+                // 重建与 tao 初始创建时一致的 blur region（覆盖全窗口）
+                let region = CreateRectRgn(0, 0, -1, -1);
+                let bb = DWM_BLURBEHIND {
+                    dwFlags: 1u32 | 2u32, // DWM_BB_ENABLE | DWM_BB_BLURREGION
+                    fEnable: true.into(),
+                    hRgnBlur: region,
+                    fTransitionOnMaximized: false.into(),
+                };
+                let _ = DwmEnableBlurBehindWindow(hwnd, &bb);
             } else {
-                style & !(WS_EX_LAYERED.0 as i32) & !(WS_EX_TRANSPARENT.0 as i32)
-            };
-            SetWindowLongW(hwnd, GWL_EXSTYLE, new_style);
-            let _ = SetWindowPos(hwnd, None, 0, 0, 0, 0,
-                SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+                let bb = DWM_BLURBEHIND {
+                    dwFlags: 1u32, // DWM_BB_ENABLE
+                    fEnable: false.into(),
+                    hRgnBlur: HRGN::default(),
+                    fTransitionOnMaximized: false.into(),
+                };
+                let _ = DwmEnableBlurBehindWindow(hwnd, &bb);
+            }
         }
     }
 }
 
 #[cfg(not(windows))]
 #[tauri::command]
-fn set_window_layered(_window: tauri::Window, _layered: bool) {}
+fn set_window_blur(_window: tauri::Window, _enabled: bool) {}
 
 #[tauri::command]
 async fn check_update(app: AppHandle) -> Result<(), String> {
@@ -215,7 +224,7 @@ fn main() {
             get_version,
             quit_app,
             force_window_resize,
-            set_window_layered,
+            set_window_blur,
             check_update,
             apply_update,
         ])

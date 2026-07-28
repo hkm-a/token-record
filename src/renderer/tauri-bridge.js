@@ -88,7 +88,7 @@
     getVersion: () => invoke('get_version'),
     getPrefs: () => invoke('get_prefs'),
 
-    setLayered: (layered) => { invoke('set_window_layered', { layered }); },
+    setBlur: (enabled) => { invoke('set_window_blur', { enabled }); },
     startUpdate: () => {
       invoke('check_update')
         .catch((e) => console.warn('[tr] check_update failed:', e));

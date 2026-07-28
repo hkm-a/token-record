@@ -289,21 +289,21 @@ function bindControls() {
 
 
   // 窗口拖拽检测：CSS -webkit-app-region 负责实际拖拽，JS 负责性能优化
-  // 同时调用 set_window_layered 临时移除 WS_EX_LAYERED，消除 DWM 透明合成卡顿
+  // 同时调用 set_window_blur 临时禁用 DWM blur behind，消除透明合成卡顿
   let dragTimer = null;
   const titlebar = document.querySelector('.titlebar');
   if (titlebar) {
     titlebar.addEventListener('pointerdown', (e) => {
       if (e.target.closest('.win-controls')) return;
       document.body.classList.add('dragging');
-      // 移除窗口透明层样式，DWM 不再需要 alpha 合成
-      if (window.api && window.api.setLayered) window.api.setLayered(false);
+      // 禁用 DWM blur behind，窗口变不透明，DWM 走普通合成路径
+      if (window.api && window.api.setBlur) window.api.setBlur(false);
       // 兜底 3 秒后自动恢复
       if (dragTimer) clearTimeout(dragTimer);
       dragTimer = setTimeout(() => {
         document.body.classList.remove('dragging');
         dragTimer = null;
-        if (window.api && window.api.setLayered) window.api.setLayered(true);
+        if (window.api && window.api.setBlur) window.api.setBlur(true);
         if (window.api && window.api.refreshNow) window.api.refreshNow();
       }, 3000);
     });
@@ -315,8 +315,8 @@ function bindControls() {
       clearTimeout(dragTimer);
       dragTimer = null;
     }
-    // 恢复透明层样式
-    if (window.api && window.api.setLayered) window.api.setLayered(true);
+    // 恢复 DWM blur behind
+    if (window.api && window.api.setBlur) window.api.setBlur(true);
     if (window.api && window.api.refreshNow) window.api.refreshNow();
   });
   // 注意：不要监听 pointerleave，拖拽时鼠标离开窗口会误移除
