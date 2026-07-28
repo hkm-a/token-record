@@ -1,11 +1,11 @@
 {
   "version": "1.6.2",
   "notes": "修复拖拽卡顿 & 折叠死区",
-  "pub_date": "2026-07-28T05:14:53Z",
+  "pub_date": "2026-07-28T05:20:28Z",
   "platforms": {
     "windows-x86_64": {
       "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.2/Token._1.6.2_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXRSejdXR3R3eURkaXRRU2x6U05JWmFpc0RHdWdZV0lNTkJRd3BlTWRJTC95R0xVaU5qU2lrUjNWUHlpUmVIZGNaMVdGMWZudi9jSWE2ZklGaFc1aVFjPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjE1NjkzCWZpbGU6VG9rZW7orrDlvZVfMS42LjJfeDY0LXNldHVwLmV4ZQpTZlI4a3cwekhFRUhGd01FR1NRTm9nMWRRZW96aW4vLzZMNitxc1JIaGVoY1M5MHUzVTMwcHgrSGpQZyt4RUNRTGo4UElSNHRxdEllLzlYTjFXVHJBQT09Cg=="
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXMxQm85azRvYit4enN3TmZzdHY3anMvN0oyVXZsYXRnaisxT3Q2T0I0MjFEa0lTMGZXdk9yRVVsV21JVm4zbVNub2Jwd2tQZGhvR3VsdjdDRDg3VmdrPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjE2MDI4CWZpbGU6VG9rZW7orrDlvZVfMS42LjJfeDY0LXNldHVwLmV4ZQpzUmpFcjE0YUltSFNjQTFZS2xOV0J2OG8wV0M4ZzlBU2VoMFR0YXk2NkVtenlCMndPWHN3eUVmVEhUcVNmNDJiVHNRVmVGMEJEc2hwTm9acC9SbmdBdz09Cg=="
     }
   }
 }
