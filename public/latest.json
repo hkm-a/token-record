@@ -1,11 +1,13 @@
 {
-  "version": "1.6.1",
-  "notes": "修复花费副行显示0 — todayCost/last7Cost 字段名修正",
-  "pub_date": "2026-07-28T20:00:00Z",
+  "version": "1.6.2",
+  "notes": "修复拖拽卡顿 & 折叠死区",
+  "pub_date": "2026-07-28T11:14:00Z",
   "platforms": {
     "windows-x86_64": {
-      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.1/Token._1.6.1_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaW9PZ2s5S0s5c3AyVUpRT05haG04UTlKT2JqUURsaEJxclo5WWJhem9lcjZBODFiTnFURUkxeERsOHhwZklYSHJMV2kwZUpJUkVsdDJsN1hlVnUwT3d3PQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MTg5NjMzCWZpbGU6VG9rZW7orrDlvZVfMS42LjFfeDY0LXNldHVwLmV4ZQpHamZ2VlpMcGJTOWxMUDZKYTg1RnNEM1g4YkRLeXZHc2ZHUXUyR0RYV3V0VUN4a0pMSUxzS2JzQld0a25zK0VVdjN5Y0FJUEdLUEhPdGJ1WjZFS1NDUT09Cg=="
+      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.2/Token._1.6.2_x64-setup.exe",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXNVV2t0V0h0Tm8rK3ZCNGRsNEloeE9tY281aURhTnVXcXoxbXpqbnhVdm4wYit6YVlyZlFwUEJ0YjdVeHdwc05Xd0pnU2lpOXdpaWZUd3RCQXNDOVFnPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjA4NTk4CWZpbGU6VG9rZW7orrDlvZVfMS42LjJfeDY0LXNldHVwLmV4ZQprKy96NzYzVEVadktvQVorcERKbVY5UlRUVkFYYzFzMU15UGQ3TWJNanl3amp1WGd0VUdxd3RQN3VwcyticjI3ZGNMNnZQTjR3UlI1YnkrWGZ1azdBUT09Cg=="
     }
+  }
+}
   }
 }
