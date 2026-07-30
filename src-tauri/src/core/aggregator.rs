@@ -48,7 +48,7 @@ pub fn aggregate(events: &[TokenEvent]) -> Snapshot {
             .entry(event.model.clone())
             .or_insert_with(|| {
                 let matched = pricing::match_model(&event.model);
-                let is_est = !pricing::is_free(&matched);
+                let is_est = pricing::is_estimated(&matched);
                 ModelStats {
                     tokens: ToolTokens::default(),
                     total: 0,
@@ -190,8 +190,9 @@ pub fn build_period(
 ) -> PeriodData {
     let mut last7_tokens = ToolTokens::default();
     let mut last7_cost = 0.0;
-    // 生成最近 7 天的键
-    let today = chrono::Local::now().date_naive();
+    // 使用快照已确定的日期，避免跨午夜刷新时今日统计与柱图窗口错位。
+    let today = chrono::NaiveDate::parse_from_str(today_key, "%Y-%m-%d")
+        .unwrap_or_else(|_| chrono::Local::now().date_naive());
     let mut days = Vec::new();
 
     for i in (0..7).rev() {

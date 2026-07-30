@@ -45,7 +45,7 @@ fn ev(overrides: HashMap<&str, &str>) -> TokenEvent {
         }
     }
     e.cost = pricing::calc_cost(e.input, e.output, e.cache_write, e.cache_read, &e.model);
-    e.estimated = !pricing::is_free(&pricing::match_model(&e.model));
+    e.estimated = pricing::is_estimated(&e.model);
     e
 }
 
@@ -66,8 +66,21 @@ fn tmp_file(name: &str, lines: &[serde_json::Value]) -> PathBuf {
 
 #[test]
 fn test_pricing_match_claude_opus() {
-    let matched = pricing::match_model("claude-opus-4-8");
+    let matched = pricing::match_model("claude-opus-4-2026");
     assert_eq!(matched, "claude-opus-4");
+}
+
+#[test]
+fn test_pricing_match_supplier_claude_opus() {
+    let matched = pricing::match_model("claude-opus-4-8");
+    assert_eq!(matched, "claude-opus-4-8");
+}
+
+#[test]
+fn test_pricing_match_claude_fable() {
+    let matched = pricing::match_model("claude-fable-5-20260609");
+    assert_eq!(matched, "claude-fable-5");
+    assert!(!pricing::is_estimated("claude-fable-5-20260609"));
 }
 
 #[test]
@@ -86,14 +99,35 @@ fn test_pricing_default_fallback() {
     let matched = pricing::match_model("totally-unknown-model-xyz");
     assert_eq!(matched, "default");
     assert_eq!(pricing::is_free("default"), false);
+    assert!(pricing::is_estimated("totally-unknown-model-xyz"));
 }
 
 #[test]
 fn test_pricing_calc_claude_opus() {
-    let cost = pricing::calc_cost(76498, 63838, 222615, 1615445, "claude-opus-4-8");
+    let cost = pricing::calc_cost(76498, 63838, 222615, 1615445, "claude-opus-4-2026");
     // 76498*15 + 63838*75 + 222615*18.75 + 1615445*1.5 = 12,532,518.75 (per million)
     let expected = 12.53251875;
     assert!((cost - expected).abs() < 0.0001, "cost={} expected={}", cost, expected);
+}
+
+#[test]
+fn test_pricing_calc_supplier_claude_opus() {
+    let cost = pricing::calc_cost(2, 272, 350, 413851, "claude-opus-4-8");
+    assert!(
+        (cost - 0.215923).abs() < f64::EPSILON,
+        "cost={} expected=0.215923",
+        cost
+    );
+}
+
+#[test]
+fn test_pricing_calc_claude_fable() {
+    let cost = pricing::calc_cost(2, 272, 350, 413851, "claude-fable-5-20260609");
+    assert!(
+        (cost - 0.431846).abs() < f64::EPSILON,
+        "cost={} expected=0.431846",
+        cost
+    );
 }
 
 #[test]
@@ -224,6 +258,47 @@ fn test_aggregator_period() {
 
     // last7 = sum of events within 7 days = 100 + 200 + 300 = 600
     assert_eq!(snap.period.last7.total, 600);
+}
+
+#[test]
+fn test_build_period_uses_supplied_today_key_for_day_window() {
+    let mut by_day = HashMap::new();
+    by_day.insert(
+        "2024-02-23".to_string(),
+        DayData {
+            tokens: ToolTokens {
+                input: 10,
+                total: 10,
+                ..Default::default()
+            },
+            total: 10,
+            cost: 0.1,
+            ..Default::default()
+        },
+    );
+    by_day.insert(
+        "2024-02-29".to_string(),
+        DayData {
+            tokens: ToolTokens {
+                input: 70,
+                total: 70,
+                ..Default::default()
+            },
+            total: 70,
+            cost: 0.7,
+            ..Default::default()
+        },
+    );
+
+    let period = aggregator::build_period(&by_day, "2024-02-29");
+
+    assert_eq!(period.today_key, "2024-02-29");
+    assert_eq!(period.days.len(), 7);
+    assert_eq!(period.days.first().unwrap().date, "2024-02-23");
+    assert_eq!(period.days.last().unwrap().date, "2024-02-29");
+    assert_eq!(period.today.total, 70);
+    assert_eq!(period.last7.total, 80);
+    assert!((period.last7_cost - 0.8).abs() < f64::EPSILON);
 }
 
 // ═══════════════════════════════════════════════════════

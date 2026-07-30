@@ -207,7 +207,8 @@ function updatePeriod(snapshot) {
     if (total <= 0) {
       bar.classList.add('is-empty');
     } else {
-      bar.style.height = Math.max(3, Math.round((total / max) * 22)) + 'px';
+      // 平方根缩放保留高峰差异，也让低值日期在紧凑图中可辨。
+      bar.style.height = Math.max(12, Math.round(Math.sqrt(total / max) * 100)) + '%';
     }
     if (d.date === todayKey) bar.classList.add('is-today');
     const md = (d.date || '').slice(5);

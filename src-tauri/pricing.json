@@ -1,11 +1,13 @@
 {
   "_meta": {
     "unit": "USD per 1,000,000 tokens",
-    "source": "基于 LiteLLM 与各厂商公开定价整理（知识截至 2026-01）。自定义/代理模型（如 gpt-5.6-terra）与付费 Grok 为估算值，可按需修改。Pi 模型为代理模型，为估算值。",
-    "updated": "2026-07-27",
+    "source": "基于 LiteLLM 与各厂商公开定价整理。Claude Fable 5 采用 Anthropic 2026-07-30 官方标准 API 费率；claude-opus-4-8 使用当前供应商实扣费率。自定义/代理模型（如 gpt-5.6-terra）、Pi 与付费 Grok 为估算值，可按需修改。",
+    "updated": "2026-07-30",
     "fields": "input=非缓存输入, output=输出(含推理), cacheWrite=缓存写入, cacheRead=缓存读取"
   },
   "models": {
+    "claude-fable-5":    { "input": 10,   "output": 50,  "cacheWrite": 12.5,  "cacheRead": 1 },
+    "claude-opus-4-8":     { "input": 5,    "output": 25,  "cacheWrite": 6.25,  "cacheRead": 0.5, "estimated": true },
     "claude-opus-4":       { "input": 15,   "output": 75,  "cacheWrite": 18.75, "cacheRead": 1.5 },
     "claude-sonnet-4":     { "input": 3,    "output": 15,  "cacheWrite": 3.75,  "cacheRead": 0.3 },
     "claude-haiku-4":      { "input": 1,    "output": 5,   "cacheWrite": 1.25,  "cacheRead": 0.1 },

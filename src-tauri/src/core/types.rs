@@ -208,6 +208,8 @@ pub struct PricingEntry {
     pub cache_read: f64,
     #[serde(default)]
     pub free: bool,
+    #[serde(default)]
+    pub estimated: bool,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

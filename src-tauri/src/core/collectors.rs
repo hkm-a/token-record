@@ -185,7 +185,7 @@ fn parse_claude_file(path: &Path) -> Vec<TokenEvent> {
             .to_string();
 
         let cost = super::pricing::calc_cost(input, output, cache_write, cache_read, &model);
-        let estimated = !super::pricing::is_free(&super::pricing::match_model(&model));
+        let estimated = super::pricing::is_estimated(&model);
 
         events.push(TokenEvent {
             tool: "claude".to_string(),
@@ -381,7 +381,7 @@ pub fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
                 acc.cached_input,
                 &model_name,
             );
-            let estimated = !super::pricing::is_free(&super::pricing::match_model(&model_name));
+            let estimated = super::pricing::is_estimated(&model_name);
             events.push(TokenEvent {
                 tool: "codex".to_string(),
                 model: model_name.clone(),
@@ -407,7 +407,7 @@ pub fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
         let non_cached_input = t_input.saturating_sub(t_cached);
         if non_cached_input != 0 || t_output != 0 || t_cache_write != 0 || t_cached != 0 {
             let cost = super::pricing::calc_cost(non_cached_input, t_output, t_cache_write, t_cached, &model_name);
-            let estimated = !super::pricing::is_free(&super::pricing::match_model(&model_name));
+            let estimated = super::pricing::is_estimated(&model_name);
             events.push(TokenEvent {
                 tool: "codex".to_string(),
                 model: model_name.clone(),
@@ -489,7 +489,7 @@ fn parse_pi_file(path: &Path) -> Vec<TokenEvent> {
         };
 
         let cost = super::pricing::calc_cost(input, output, cache_write, cache_read, &model);
-        let estimated = !super::pricing::is_free(&super::pricing::match_model(&model));
+        let estimated = super::pricing::is_estimated(&model);
 
         events.push(TokenEvent {
             tool: "pi".to_string(),
@@ -607,7 +607,7 @@ pub fn parse_grok_file(path: &Path) -> Vec<TokenEvent> {
             continue;
         }
         let cost = super::pricing::calc_cost(non_cached_input, acc.output, 0, acc.cache_read, model);
-        let estimated = !super::pricing::is_free(&super::pricing::match_model(model));
+        let estimated = super::pricing::is_estimated(model);
 
         events.push(TokenEvent {
             tool: "grok".to_string(),

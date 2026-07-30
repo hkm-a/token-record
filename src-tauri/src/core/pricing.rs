@@ -25,6 +25,7 @@ fn get_pricing() -> &'static Pricing {
                     cache_write: 15.0,
                     cache_read: 7.5,
                     free: false,
+                    estimated: true,
                 },
             },
         };
@@ -45,6 +46,7 @@ fn get_pricing() -> &'static Pricing {
                         cache_write: e.get("cacheWrite").and_then(|v| v.as_f64()).unwrap_or(15.0),
                         cache_read: e.get("cacheRead").and_then(|v| v.as_f64()).unwrap_or(7.5),
                         free: e.get("free").and_then(|v| v.as_bool()).unwrap_or(false),
+                        estimated: e.get("estimated").and_then(|v| v.as_bool()).unwrap_or(false),
                     },
                 );
             }
@@ -56,6 +58,7 @@ fn get_pricing() -> &'static Pricing {
             cache_write: d.get("cacheWrite").and_then(|v| v.as_f64()).unwrap_or(15.0),
             cache_read: d.get("cacheRead").and_then(|v| v.as_f64()).unwrap_or(7.5),
             free: false,
+            estimated: d.get("estimated").and_then(|v| v.as_bool()).unwrap_or(true),
         }).unwrap_or(PricingEntry {
             model: "default".to_string(),
             input: 15.0,
@@ -63,6 +66,7 @@ fn get_pricing() -> &'static Pricing {
             cache_write: 15.0,
             cache_read: 7.5,
             free: false,
+            estimated: true,
         });
         Pricing { entries, default_entry }
     })
@@ -98,6 +102,11 @@ fn get_entry(model_name: &str) -> &PricingEntry {
 /// 判断是否免费
 pub fn is_free(model_name: &str) -> bool {
     get_entry(model_name).free
+}
+
+/// 判断费率是否为估算值。
+pub fn is_estimated(model_name: &str) -> bool {
+    get_entry(model_name).estimated
 }
 
 /// 计算费用
