@@ -39,7 +39,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDhBQUE2NDVDQTAxRjRGODQKUldTRVR4K2dYR1NxaWcwMEdtakk2RXNNYUtBWXhrYkFCMXpNeGRxYVI2QWd2N0d2bUdicnI0TTIK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEU5RjdFOUNBQjJGMDA3QTAKUldTZ0IvQ3l5dW4zNldoN3E3azFkZFpEUHUrR2lYVnNnRUJoSGFaQ0lKMk5rT3lETjRtNHlyMEcK",
       "endpoints": [
         "https://raw.githubusercontent.com/hkm-a/token-record/main/public/latest.json"
       ],
