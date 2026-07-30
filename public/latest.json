@@ -1,11 +1,11 @@
 {
-  "version": "1.6.5",
-  "notes": "总量终身累计：按日历史持久化，不再随各工具清理本地会话而缩水",
-  "pub_date": "2026-07-28T11:04:05Z",
+  "version": "1.6.8",
+  "notes": "修复 Claude 流式用量少计、Codex/Grok 推理 token 统计、7 日柱图和 Claude Fable 5 标准费率；恢复签名自动更新。",
+  "pub_date": "2026-07-30T04:44:32Z",
   "platforms": {
     "windows-x86_64": {
-      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.5/Token._1.6.5_x64-setup.exe",
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTRVR4K2dYR1NxaXRFckx2SUVxMlIwZHNjdWFDU0VRSGx2TS9pRHhNN04rSllBczNVOFFDdDZHT2hENXIyaHhqNEU4NVBHTmRkL280c1JjNjN6OVB0c1o0Yk5Vc3hUNXdzPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1MjM2NDk1CWZpbGU6VG9rZW7orrDlvZVfMS42LjVfeDY0LXNldHVwLmV4ZQpQd0RYSmIybDV2SFVpRkRBTVBhVGVMSHRML3VzTXFtSmJScm80Wm1HN3pCNmtBQlowWm5CUUI1UCtLUkh4OGJ2ZEdheVZxeWVUbWZhWWNvaUk4QmVBZz09Cg=="
+      "url": "https://github.com/hkm-a/token-record/releases/download/v1.6.8/Token._1.6.8_x64-setup.exe",
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVTZ0IvQ3l5dW4zNlhBV0VHSDQxL3FSclZDeFBnRTJpKzlOa2ZYd0VHK01uRHVPcHc0ZklkaUVIa0h6ZjJuUzhITWViU0VuVFZreVZQUEt3Mi96MGpIRDMyUkdXNEdwemdvPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzg1Mzg2NjY3CWZpbGU6VG9rZW7orrDlvZVfMS42LjhfeDY0LXNldHVwLmV4ZQpJMXFnbTdVYklibFVjbDJ2a0hGR29yVnJFbk9vUnYwV3VWMHZ2dmdIdG53THVGdWpPajVQcjdPYmF4Qmc3K3ZDR0ZGUWNhaFpXbXRoMkNuYnc3UzdCdz09Cg=="
     }
   }
 }
