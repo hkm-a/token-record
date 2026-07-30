@@ -3,13 +3,14 @@
 
 use std::collections::HashMap;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 // 被测模块
 use token_record_lib::core::pricing;
 use token_record_lib::core::types::*;
 use token_record_lib::core::jsonl;
 use token_record_lib::core::aggregator;
+use token_record_lib::core::collectors;
 
 // ── 辅助函数 ──
 
@@ -110,6 +111,45 @@ fn test_aggregator_dedup_same_key_once() {
     let events = vec![ev(HashMap::new()), ev(HashMap::new())];
     let snap = aggregator::aggregate(&events);
     assert_eq!(snap.tools.get("claude").unwrap().tokens.input, 100);
+}
+
+#[test]
+fn test_aggregator_dedup_keeps_later_complete_streaming_event() {
+    let early = ev(HashMap::from([
+        ("dedupe_key", "streaming-message"),
+        ("input", "16896"),
+    ]));
+    let mut complete = ev(HashMap::from([
+        ("dedupe_key", "streaming-message"),
+        ("input", "41709"),
+        ("output", "108"),
+        ("cache_read", "38016"),
+    ]));
+    complete.timestamp = 1;
+
+    let snap = aggregator::aggregate(&[early, complete]);
+    let tokens = &snap.tools.get("claude").unwrap().tokens;
+    assert_eq!(tokens.input, 41709);
+    assert_eq!(tokens.output, 108);
+    assert_eq!(tokens.cache_read, 38016);
+    assert_eq!(tokens.total, 79833);
+}
+
+#[test]
+fn test_aggregator_dedup_keeps_more_complete_same_timestamp_event() {
+    let early = ev(HashMap::from([
+        ("dedupe_key", "same-timestamp-message"),
+        ("input", "10"),
+    ]));
+    let complete = ev(HashMap::from([
+        ("dedupe_key", "same-timestamp-message"),
+        ("input", "10"),
+        ("output", "20"),
+        ("cache_read", "30"),
+    ]));
+
+    let snap = aggregator::aggregate(&[early, complete]);
+    assert_eq!(snap.tools.get("claude").unwrap().total, 60);
 }
 
 #[test]
@@ -224,6 +264,117 @@ fn test_jsonl_skip_empty_lines() {
     assert_eq!(result.len(), 2);
 }
 
+fn codex_token_count(last: serde_json::Value, total: serde_json::Value) -> serde_json::Value {
+    serde_json::json!({
+        "type": "event_msg",
+        "timestamp": "2026-07-30T12:00:00Z",
+        "payload": {
+            "type": "token_count",
+            "info": {
+                "last_token_usage": last,
+                "total_token_usage": total
+            }
+        }
+    })
+}
+
+fn codex_session_meta() -> serde_json::Value {
+    serde_json::json!({
+        "type": "session_meta",
+        "timestamp": "2026-07-30T12:00:00Z",
+        "payload": { "model": "gpt-5", "session_id": "codex-test" }
+    })
+}
+
+#[test]
+fn test_codex_complete_replay_counted_once_and_reasoning_is_output() {
+    let last = serde_json::json!({
+        "input_tokens": 100,
+        "cached_input_tokens": 20,
+        "cache_write_input_tokens": 30,
+        "output_tokens": 40,
+        "reasoning_output_tokens": 50,
+        "total_tokens": 240
+    });
+    let total = serde_json::json!({
+        "input_tokens": 100,
+        "cached_input_tokens": 20,
+        "cache_write_input_tokens": 30,
+        "output_tokens": 40,
+        "reasoning_output_tokens": 50,
+        "total_tokens": 240
+    });
+    let p = tmp_file("codex-complete-replay.jsonl", &[
+        codex_session_meta(),
+        codex_token_count(last.clone(), total.clone()),
+        codex_token_count(last, total),
+    ]);
+
+    let events = collectors::parse_codex_file(&p);
+    assert_eq!(events.len(), 1);
+    let event = &events[0];
+    assert_eq!(event.input, 80);
+    assert_eq!(event.cache_write, 30);
+    assert_eq!(event.cache_read, 20);
+    assert_eq!(event.output, 90, "推理 token 必须计入输出");
+    assert_eq!(event.cost, pricing::calc_cost(80, 90, 30, 20, "gpt-5"));
+}
+
+#[test]
+fn test_codex_same_total_with_different_last_is_not_deduplicated() {
+    let total = serde_json::json!({
+        "input_tokens": 300,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_output_tokens": 0,
+        "total_tokens": 300
+    });
+    let p = tmp_file("codex-same-total-different-last.jsonl", &[
+        codex_session_meta(),
+        codex_token_count(serde_json::json!({
+            "input_tokens": 100, "cached_input_tokens": 0, "cache_write_input_tokens": 0,
+            "output_tokens": 0, "reasoning_output_tokens": 0, "total_tokens": 100
+        }), total.clone()),
+        codex_token_count(serde_json::json!({
+            "input_tokens": 200, "cached_input_tokens": 0, "cache_write_input_tokens": 0,
+            "output_tokens": 0, "reasoning_output_tokens": 0, "total_tokens": 200
+        }), total),
+    ]);
+
+    let events = collectors::parse_codex_file(&p);
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].input, 300);
+}
+
+#[test]
+fn test_grok_reasoning_is_output() {
+    let p = tmp_file("grok-reasoning.jsonl", &[serde_json::json!({
+        "timestamp": 1785412800,
+        "params": {
+            "update": {
+                "sessionUpdate": "turn_completed",
+                "usage": {
+                    "modelUsage": {
+                        "grok-4": {
+                            "inputTokens": 100,
+                            "cachedReadTokens": 20,
+                            "outputTokens": 30,
+                            "reasoningTokens": 40
+                        }
+                    }
+                }
+            }
+        }
+    })]);
+
+    let events = collectors::parse_grok_file(&p);
+    assert_eq!(events.len(), 1);
+    assert_eq!(events[0].input, 80);
+    assert_eq!(events[0].output, 70, "推理 token 必须计入输出");
+    assert_eq!(events[0].cost, pricing::calc_cost(80, 70, 0, 20, "grok-4"));
+}
+
 // ── 按日历史合并语义 ──
 
 fn day_tool(total: u64, cost: f64) -> token_record_lib::core::types::DayToolStat {
@@ -295,4 +446,20 @@ fn test_history_merge_multi_tool_same_day() {
     history::merge(&mut hist, &b, 2);
     assert_eq!(hist["2026-07-28"].tools["claude"].total, 100);
     assert_eq!(hist["2026-07-28"].tools["grok"].total, 200);
+}
+
+#[test]
+fn test_history_correct_codex_records_allows_verified_decrease() {
+    use token_record_lib::core::history;
+    let mut hist = history::History::new();
+    history::merge(
+        &mut hist,
+        &HashMap::from([("2026-07-28".to_string(), day_data("codex", 900, 9.0))]),
+        1,
+    );
+    let visible = HashMap::from([("2026-07-28".to_string(), day_data("codex", 600, 6.0))]);
+
+    assert!(history::correct_codex_records(&mut hist, &visible, 2));
+    assert_eq!(hist["2026-07-28"].tools["codex"].total, 600);
+    assert_eq!(hist["2026-07-28"].tools["codex"].cost, 6.0);
 }

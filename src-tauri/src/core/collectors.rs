@@ -1,7 +1,7 @@
 use super::jsonl;
 use super::types::TokenEvent;
 use chrono::{Local, TimeZone, Utc};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::{LazyLock, Mutex};
 use std::time::SystemTime;
@@ -224,7 +224,56 @@ pub fn collect_codex_events() -> Vec<TokenEvent> {
     events
 }
 
-fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
+/// Codex 的 token_count 事件可能因会话重放重复写入。只有 last 与 total
+/// 全字段完全相同，才能确定这不是新的增量。
+#[derive(Debug, Clone, Eq, Hash, PartialEq)]
+struct CodexUsageSnapshot {
+    last_input: u64,
+    last_cached_input: u64,
+    last_cache_write: u64,
+    last_output: u64,
+    last_reasoning: u64,
+    last_total: u64,
+    total_input: u64,
+    total_cached_input: u64,
+    total_cache_write: u64,
+    total_output: u64,
+    total_reasoning: u64,
+    total_total: u64,
+}
+
+impl CodexUsageSnapshot {
+    fn from_usage(last: &serde_json::Value, total: &serde_json::Value) -> Self {
+        Self {
+            last_input: usage_tokens(last, "input_tokens"),
+            last_cached_input: cached_input_tokens(last),
+            last_cache_write: usage_tokens(last, "cache_write_input_tokens"),
+            last_output: usage_tokens(last, "output_tokens"),
+            last_reasoning: usage_tokens(last, "reasoning_output_tokens"),
+            last_total: usage_tokens(last, "total_tokens"),
+            total_input: usage_tokens(total, "input_tokens"),
+            total_cached_input: cached_input_tokens(total),
+            total_cache_write: usage_tokens(total, "cache_write_input_tokens"),
+            total_output: usage_tokens(total, "output_tokens"),
+            total_reasoning: usage_tokens(total, "reasoning_output_tokens"),
+            total_total: usage_tokens(total, "total_tokens"),
+        }
+    }
+}
+
+fn usage_tokens(usage: &serde_json::Value, field: &str) -> u64 {
+    usage.get(field).and_then(|v| v.as_u64()).unwrap_or(0)
+}
+
+fn cached_input_tokens(usage: &serde_json::Value) -> u64 {
+    usage
+        .get("cached_input_tokens")
+        .or_else(|| usage.get("cache_read_input_tokens"))
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0)
+}
+
+pub fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
     let lines = jsonl::read_jsonl(path);
     let file_stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("unknown");
     let mut events = Vec::new();
@@ -237,12 +286,13 @@ fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
     let mut by_day: HashMap<String, CodexDayAcc> = HashMap::new();
     let mut saw_last = false;
     let mut last_total: Option<serde_json::Value> = None;
+    let mut seen_snapshots: HashSet<CodexUsageSnapshot> = HashSet::new();
 
     struct CodexDayAcc {
         input: u64,
         cached_input: u64,
+        cache_write: u64,
         output: u64,
-        reasoning: u64,
         ts: i64,
     }
 
@@ -279,14 +329,18 @@ fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
             }
 
             if let Some(last) = info.get("last_token_usage") {
-                let l_input = last.get("input_tokens").and_then(|v| v.as_u64()).unwrap_or(0);
-                let l_cached = last
-                    .get("cached_input_tokens")
-                    .or_else(|| last.get("cache_read_input_tokens"))
-                    .and_then(|v| v.as_u64())
-                    .unwrap_or(0);
-                let l_output = last.get("output_tokens").and_then(|v| v.as_u64()).unwrap_or(0);
-                let l_reasoning = last.get("reasoning_output_tokens").and_then(|v| v.as_u64()).unwrap_or(0);
+                if let Some(total) = info.get("total_token_usage") {
+                    let snapshot = CodexUsageSnapshot::from_usage(last, total);
+                    if !seen_snapshots.insert(snapshot) {
+                        continue;
+                    }
+                }
+
+                let l_input = usage_tokens(last, "input_tokens");
+                let l_cached = cached_input_tokens(last);
+                let l_cache_write = usage_tokens(last, "cache_write_input_tokens");
+                let l_output = usage_tokens(last, "output_tokens")
+                    .saturating_add(usage_tokens(last, "reasoning_output_tokens"));
 
                 let day_ts = record
                     .get("timestamp")
@@ -299,14 +353,14 @@ fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
                 let acc = by_day.entry(key.clone()).or_insert(CodexDayAcc {
                     input: 0,
                     cached_input: 0,
+                    cache_write: 0,
                     output: 0,
-                    reasoning: 0,
                     ts: day_ts,
                 });
                 acc.input += l_input;
                 acc.cached_input += l_cached;
+                acc.cache_write += l_cache_write;
                 acc.output += l_output;
-                acc.reasoning += l_reasoning;
                 saw_last = true;
             }
         }
@@ -317,10 +371,16 @@ fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
     if saw_last {
         for (key, acc) in &by_day {
             let non_cached_input = acc.input.saturating_sub(acc.cached_input);
-            if non_cached_input == 0 && acc.output == 0 && acc.cached_input == 0 {
+            if non_cached_input == 0 && acc.output == 0 && acc.cache_write == 0 && acc.cached_input == 0 {
                 continue;
             }
-            let cost = super::pricing::calc_cost(non_cached_input, acc.output, 0, acc.cached_input, &model_name);
+            let cost = super::pricing::calc_cost(
+                non_cached_input,
+                acc.output,
+                acc.cache_write,
+                acc.cached_input,
+                &model_name,
+            );
             let estimated = !super::pricing::is_free(&super::pricing::match_model(&model_name));
             events.push(TokenEvent {
                 tool: "codex".to_string(),
@@ -328,7 +388,7 @@ fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
                 model_label: String::new(),
                 input: non_cached_input,
                 output: acc.output,
-                cache_write: 0,
+                cache_write: acc.cache_write,
                 cache_read: acc.cached_input,
                 cost,
                 estimated,
@@ -339,16 +399,14 @@ fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
             });
         }
     } else if let Some(total) = last_total {
-        let t_input = total.get("input_tokens").and_then(|v| v.as_u64()).unwrap_or(0);
-        let t_cached = total
-            .get("cached_input_tokens")
-            .or_else(|| total.get("cache_read_input_tokens"))
-            .and_then(|v| v.as_u64())
-            .unwrap_or(0);
-        let t_output = total.get("output_tokens").and_then(|v| v.as_u64()).unwrap_or(0);
+        let t_input = usage_tokens(&total, "input_tokens");
+        let t_cached = cached_input_tokens(&total);
+        let t_cache_write = usage_tokens(&total, "cache_write_input_tokens");
+        let t_output = usage_tokens(&total, "output_tokens")
+            .saturating_add(usage_tokens(&total, "reasoning_output_tokens"));
         let non_cached_input = t_input.saturating_sub(t_cached);
-        if non_cached_input != 0 || t_output != 0 || t_cached != 0 {
-            let cost = super::pricing::calc_cost(non_cached_input, t_output, 0, t_cached, &model_name);
+        if non_cached_input != 0 || t_output != 0 || t_cache_write != 0 || t_cached != 0 {
+            let cost = super::pricing::calc_cost(non_cached_input, t_output, t_cache_write, t_cached, &model_name);
             let estimated = !super::pricing::is_free(&super::pricing::match_model(&model_name));
             events.push(TokenEvent {
                 tool: "codex".to_string(),
@@ -356,7 +414,7 @@ fn parse_codex_file(path: &Path) -> Vec<TokenEvent> {
                 model_label: String::new(),
                 input: non_cached_input,
                 output: t_output,
-                cache_write: 0,
+                cache_write: t_cache_write,
                 cache_read: t_cached,
                 cost,
                 estimated,
@@ -481,7 +539,7 @@ fn collect_grok_updates(dir: &Path, events: &mut Vec<TokenEvent>) {
     }
 }
 
-fn parse_grok_file(path: &Path) -> Vec<TokenEvent> {
+pub fn parse_grok_file(path: &Path) -> Vec<TokenEvent> {
     let lines = jsonl::read_jsonl(path);
     let session_id = path
         .parent()
@@ -497,7 +555,6 @@ fn parse_grok_file(path: &Path) -> Vec<TokenEvent> {
         input: u64,
         output: u64,
         cache_read: u64,
-        reasoning: u64,
     }
 
     for record in &lines {
@@ -522,20 +579,20 @@ fn parse_grok_file(path: &Path) -> Vec<TokenEvent> {
             for (model, mu) in model_usage {
                 let acc = by_model
                     .entry(model.clone())
-                    .or_insert(GrokAcc { input: 0, output: 0, cache_read: 0, reasoning: 0 });
+                    .or_insert(GrokAcc { input: 0, output: 0, cache_read: 0 });
                 acc.input += mu.get("inputTokens").and_then(|v| v.as_u64()).unwrap_or(0);
-                acc.output += mu.get("outputTokens").and_then(|v| v.as_u64()).unwrap_or(0);
+                acc.output += mu.get("outputTokens").and_then(|v| v.as_u64()).unwrap_or(0)
+                    + mu.get("reasoningTokens").and_then(|v| v.as_u64()).unwrap_or(0);
                 acc.cache_read += mu.get("cachedReadTokens").and_then(|v| v.as_u64()).unwrap_or(0);
-                acc.reasoning += mu.get("reasoningTokens").and_then(|v| v.as_u64()).unwrap_or(0);
             }
         } else {
             let acc = by_model
                 .entry("grok".to_string())
-                .or_insert(GrokAcc { input: 0, output: 0, cache_read: 0, reasoning: 0 });
+                .or_insert(GrokAcc { input: 0, output: 0, cache_read: 0 });
             acc.input += usage.get("inputTokens").and_then(|v| v.as_u64()).unwrap_or(0);
-            acc.output += usage.get("outputTokens").and_then(|v| v.as_u64()).unwrap_or(0);
+            acc.output += usage.get("outputTokens").and_then(|v| v.as_u64()).unwrap_or(0)
+                + usage.get("reasoningTokens").and_then(|v| v.as_u64()).unwrap_or(0);
             acc.cache_read += usage.get("cachedReadTokens").and_then(|v| v.as_u64()).unwrap_or(0);
-            acc.reasoning += usage.get("reasoningTokens").and_then(|v| v.as_u64()).unwrap_or(0);
         }
 
         if let Some(t) = record.get("timestamp").and_then(|v| v.as_i64()) {

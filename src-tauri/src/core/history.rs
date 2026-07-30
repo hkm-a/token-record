@@ -17,8 +17,14 @@ use std::path::PathBuf;
 
 pub type History = HashMap<String, HistoryDay>;
 
+const CODEX_CORRECTION_MARKER: &str = "history.migration-v1.6.6-codex";
+
 fn history_path() -> PathBuf {
     crate::config::config_dir().join("history.json")
+}
+
+fn codex_correction_marker_path() -> PathBuf {
+    crate::config::config_dir().join(CODEX_CORRECTION_MARKER)
 }
 
 /// 读取历史。文件缺失视为空历史；文件存在但损坏返回 Err——
@@ -61,6 +67,58 @@ pub fn merge(hist: &mut History, by_day: &HashMap<String, DayData>, now_ms: i64)
         }
         entry.updated_at = now_ms;
     }
+}
+
+/// 将受旧 Codex 重放计数错误影响、且源文件仍可见的日期直接改为本轮扫描结果。
+/// 源文件已被清理的日期没有可验证的替代数据，保留旧值以避免凭空改写历史。
+pub fn correct_codex_records(hist: &mut History, by_day: &HashMap<String, DayData>, now_ms: i64) -> bool {
+    let mut corrected = false;
+
+    for (date, day) in by_day {
+        let Some(live) = day.tools.get("codex") else {
+            continue;
+        };
+        let entry = hist.entry(date.clone()).or_default();
+        if !same_stat(entry.tools.get("codex"), live) {
+            entry.tools.insert("codex".to_string(), live.clone());
+            entry.updated_at = now_ms;
+            corrected = true;
+        }
+    }
+
+    corrected
+}
+
+fn same_stat(existing: Option<&DayToolStat>, live: &DayToolStat) -> bool {
+    existing.is_some_and(|kept| {
+        kept.input == live.input
+            && kept.output == live.output
+            && kept.cache_write == live.cache_write
+            && kept.cache_read == live.cache_read
+            && kept.total == live.total
+            && kept.cost == live.cost
+            && kept.estimated == live.estimated
+    })
+}
+
+fn backup_before_codex_correction() -> Result<(), String> {
+    let source = history_path();
+    if !source.exists() {
+        return Ok(());
+    }
+    let backup = source.with_file_name("history.pre-v1.6.6.json");
+    if !backup.exists() {
+        std::fs::copy(&source, &backup).map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
+fn save_codex_correction_marker() -> Result<(), String> {
+    let path = codex_correction_marker_path();
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir).map_err(|e| e.to_string())?;
+    }
+    std::fs::write(path, "v1.6.6 Codex 历史校正已执行\n").map_err(|e| e.to_string())
 }
 
 /// 用合并后的历史重建快照的 byDay / tools / grand / period。
@@ -140,9 +198,30 @@ fn add_stat(target: &mut ToolTokens, stat: &DayToolStat) {
 pub fn apply(snapshot: &mut Snapshot) {
     match load() {
         Ok(mut hist) => {
+            let correction_pending = !codex_correction_marker_path().exists();
+            let (correction_allowed, correction_applied) = if correction_pending {
+                match backup_before_codex_correction() {
+                    Ok(()) => {
+                        let corrected = correct_codex_records(&mut hist, &snapshot.by_day, snapshot.generated_at);
+                        (true, corrected)
+                    }
+                    Err(e) => {
+                        eprintln!("[token-record] Codex 历史备份失败，已跳过本轮校正: {}", e);
+                        (false, false)
+                    }
+                }
+            } else {
+                (false, false)
+            };
             merge(&mut hist, &snapshot.by_day, snapshot.generated_at);
             if let Err(e) = save(&hist) {
                 eprintln!("[token-record] 历史写盘失败（本轮仅展示合并结果）: {}", e);
+            } else if correction_pending && correction_allowed {
+                if let Err(e) = save_codex_correction_marker() {
+                    eprintln!("[token-record] Codex 历史校正标记写盘失败，下次将重试: {}", e);
+                } else if correction_applied {
+                    eprintln!("[token-record] 已校正当前可见日期的 Codex 历史，并保留 v1.6.6 前备份。");
+                }
             }
             rebuild(snapshot, &hist);
         }

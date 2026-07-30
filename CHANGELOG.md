@@ -1,5 +1,20 @@
 # 变更记录
 
+## 1.6.6 — 2026-07-30
+
+### 修复
+
+- **Claude Code 流式记录少计**：同一请求会先写入占位用量、再追加完整用量。聚合器现保留时间更晚的记录；同一时间戳时保留 token 总量更高的完整记录，避免重启后扫描仍漏记。
+- **Codex 会话重放重复累计**：单个 JSONL 内完整相同的 `last_token_usage + total_token_usage` 快照现在只计一次；累计总量相同但本次增量不同的合法记录不会被误删。
+- **推理 token 未计入输出与费用**：Codex 的 `reasoning_output_tokens`、Grok Build 的 `reasoningTokens` 现按价目表契约并入输出；Codex 的缓存写入 token 也纳入总量与费用。
+- **历史无法回落到修正值**：首次运行 v1.6.6 会备份 `%APPDATA%/token-record/history.json`，并以当前可见 Codex 源日志校正对应日期；源文件已清理的历史保持原样，避免不可验证的改写。
+
+### 验证
+
+- 新增 Codex 完整重放、相同累计不同增量、Codex/Grok 推理输出、Codex 历史下降校正等回归测试。
+- 本机真实日志复核：Claude 补回 240,585 token；Grok 补入 141,267 推理 token；Codex 完成重放去重、推理与缓存写入校正。
+- 版本 1.6.5 → 1.6.6。
+
 ## 1.6.5 — 2026-07-28
 
 ### 修复

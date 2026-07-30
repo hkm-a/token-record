@@ -19,7 +19,7 @@
 
 ---
 
-**当前版本：v1.6.5** · [Releases](https://github.com/hkm-a/token-record/releases/tag/v1.6.5)
+**当前版本：v1.6.6** · [Releases](https://github.com/hkm-a/token-record/releases/tag/v1.6.6)
 
 本地优先的桌面悬浮窗：汇总 **Claude Code**、**Codex**、**Pi**、**Grok Build** 的 token 消耗与估算费用，数值变化带动效。无需账号、不上云。
 
@@ -138,6 +138,8 @@ npm run cli -- --csv .cache/export.csv
 - 按日历史：`.cache/daily.json`（约 90 天）
 
 > **v1.6.5+**：历史持久化至 `%APPDATA%/token-record/history.json`，不受本地会话文件清理影响，终身累计。
+
+> **v1.6.6+**：首次刷新会校正当前仍可见的 Codex 会话重放计数，并在同目录保留 `history.pre-v1.6.6.json` 备份；已被源工具清理的旧日期无法可靠重算，继续保留原记录。
 
 ---
 

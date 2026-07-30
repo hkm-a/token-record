@@ -10,14 +10,9 @@ pub fn aggregate(events: &[TokenEvent]) -> Snapshot {
     let mut by_day: HashMap<String, DayData> = HashMap::new();
     let mut tools: HashMap<String, ToolStats> = HashMap::new();
     let mut grand = GrandTotal::default();
-    let mut seen_dedupe = HashSet::new();
     let mut sessions: HashMap<String, HashSet<String>> = HashMap::new();
 
-    for event in events {
-        // 去重
-        if !seen_dedupe.insert(event.dedupe_key.clone()) {
-            continue;
-        }
+    for event in deduplicate_events(events) {
 
         // 按工具分组
         let tool_entry = tools.entry(event.tool.clone()).or_insert_with(|| ToolStats {
@@ -137,6 +132,41 @@ pub fn aggregate(events: &[TokenEvent]) -> Snapshot {
         period,
         sources,
     }
+}
+
+/// 规范化流式日志中的同键事件。
+///
+/// Claude Code 会为同一 assistant 消息先写入占位用量、再追加完整用量。
+/// 其他来源也可能因会话恢复产生重复事件。按时间保留最终记录；时间相同则
+/// 选择 token 总量更高的完整记录，避免依赖目录遍历顺序而漏掉同秒更新。
+fn deduplicate_events(events: &[TokenEvent]) -> Vec<&TokenEvent> {
+    let mut selected: HashMap<&str, (usize, &TokenEvent)> = HashMap::new();
+
+    for (index, event) in events.iter().enumerate() {
+        match selected.get(event.dedupe_key.as_str()) {
+            Some((_, existing)) if !should_replace_event(existing, event) => {}
+            _ => {
+                selected.insert(event.dedupe_key.as_str(), (index, event));
+            }
+        }
+    }
+
+    let mut deduplicated: Vec<(usize, &TokenEvent)> = selected.into_values().collect();
+    deduplicated.sort_by_key(|(index, _)| *index);
+    deduplicated
+        .into_iter()
+        .map(|(_, event)| event)
+        .collect()
+}
+
+fn should_replace_event(existing: &TokenEvent, candidate: &TokenEvent) -> bool {
+    candidate.timestamp > existing.timestamp
+        || (candidate.timestamp == existing.timestamp
+            && event_token_total(candidate) > event_token_total(existing))
+}
+
+fn event_token_total(event: &TokenEvent) -> u64 {
+    event.input + event.output + event.cache_write + event.cache_read
 }
 
 fn add_to_tokens(tokens: &mut ToolTokens, event: &TokenEvent) {
