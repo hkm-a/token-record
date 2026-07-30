@@ -1,6 +1,6 @@
 {
   "name": "token-record",
-  "version": "1.6.7",
+  "version": "1.6.8",
   "description": "记录 Claude Code、Codex、Pi、Grok Build 的 token 与金钱消耗，并以桌面悬浮窗展示",
   "scripts": {
     "test": "node --test",
